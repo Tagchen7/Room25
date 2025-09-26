@@ -26,10 +26,11 @@ class Game:
 
 class GameState:
     def __init__(self):
-       pass
-
+       self.rooms = [entity.Room(x=x, y=y) for x in range(-2, 3) for y in range(-2, 3)]
+       
     def update(self):
         # Update game logic here
+        print(self.rooms)
         return True
     
 def draw_info_for_gui(game_state):        
@@ -37,23 +38,4 @@ def draw_info_for_gui(game_state):
     Prepare information for GUI rendering.
     returns a list of all objects to be drawn, and the offset to center the view on
     """
-    # x, y offset
-    base_x = 500
-    base_y = 500
-    add_x = 50
-    add_y = 100
-    sel_y = 50
-    info = {
-        "color": {"background": "white",
-                  "Stopper": "black",
-                  "Border": "black"},
-        "flask":{"offset" : {"base_x": base_x,
-                              "base_y": base_y,
-                              "add_x": add_x,
-                              "add_y": add_y,
-                              "sel_y": sel_y},
-                "num_per_line": 5,
-                "flasks" : game_state.flasks
-                }
-    }
-    return info
+    return game_state.rooms
