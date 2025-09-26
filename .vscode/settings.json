@@ -1,0 +1,7 @@
+{
+    "editor.formatOnSave": true,
+    "python.analysis.typeCheckingMode": "standard",
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.autoIndent": true,
+    "python.analysis.completeFunctionParens": true,
+}
