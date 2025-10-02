@@ -21,21 +21,24 @@ class Game:
         self.gui.root.after(1000, self.loop)
     
     def handle_click(self, x, y):
-        pass
+        self.game_state.handle_click(x, y)
+        self.gui.update(draw_info_for_gui(self.game_state))
 
 
 class GameState:
     def __init__(self):
-       self.rooms = [entity.Room(x=x, y=y) for x in range(-2, 3) for y in range(-2, 3)]
+       self.grid = entity.Grid()
        
     def update(self):
         # Update game logic here
-        print(self.rooms)
-        return True
+        pass
+
+    def handle_click(self, x, y):
+        pass
     
 def draw_info_for_gui(game_state):        
     """
     Prepare information for GUI rendering.
     returns a list of all objects to be drawn, and the offset to center the view on
     """
-    return game_state.rooms
+    return game_state.grid
