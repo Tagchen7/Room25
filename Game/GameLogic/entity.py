@@ -1,7 +1,9 @@
 # Contains definitions for game entities like Player, Enemy, Projectile, etc.
 
-from xmlrpc.client import Boolean
-
+class Info:
+    def __init__(self, player, color):
+        self.player = player
+        self.color = color
 
 class Room:
     def __init__(self, corner=False, color="grey", number=0):
@@ -9,11 +11,47 @@ class Room:
         self.corner = corner
         self.color = color
         self.number = number
+        # whenever someone looks at the room, add the info based on what they see
+        self.info = []
+
+    def add_info(self, person, color):
+        self.info.append(Info(person, color))
 
     def __repr__(self) -> str:
         if self.number > 0:
             return f"{self.color}:{self.number}"
         return self.color
+    
+    def name(self):
+        # name is organised by a (color, number) tuple
+        names = {("blue", 1): "Central",
+                 ("blue", 2): "Exit",
+                 ("blue", 3): "Key",
+                 ("green", 1): "Empty",
+                 ("green", 2): "Vision",
+                 ("green", 3): "Swapping",
+                 ("green", 4): "Shifting",
+                 ("green", 5): "Portal",
+                 ("green", 6): "Regeneration",
+                 ("green", 7): "Robot",
+                 ("red", 1): "Acid",
+                 ("red", 2): "Death",
+                 ("red", 3): "Trap",
+                 ("red", 4): "Flooded",
+                 ("red", 5): "Shredder",
+                 ("red", 6): "Timer",
+                 ("red", 7): "Paranoia",
+                 ("red", 8): "Illusion",
+                 ("yellow", 1): "Vortex",
+                 ("yellow", 2): "Prison",
+                 ("yellow", 3): "Cold",
+                 ("yellow", 4): "Dark",
+                 ("yellow", 5): "Pivot",
+                 ("yellow", 6): "Jamming",
+                 ("yellow", 7): "M.A.C.",
+                 ("yellow", 8): "Mirror"
+                 }
+        return names.get((self.color, self.number), "Unknown")
     
 class Grid:
     size = 5
