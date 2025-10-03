@@ -28,13 +28,17 @@ class Game:
 class GameState:
     def __init__(self):
        self.grid = entity.Grid()
+       self.players = 4
+       self.state = None
        
     def update(self):
         # Update game logic here
         pass
 
     def handle_click(self, x, y):
-        pass
+        if self.state == None:
+            pass
+            
     
 def draw_info_for_gui(game_state):        
     """
