@@ -37,7 +37,7 @@ class Player:
         self.name = self.reset_name()
 
     def reset_name(self):
-        return f"{self.color.capitalize()}_{self.index}"
+        return f"{self.index}"
     
     def set_name(self, new_name):
         self.name = new_name
