@@ -18,6 +18,17 @@ while True:
         if event.type == pygame.locals.QUIT:
             pygame.quit()
             sys.exit()
+        if event.type == pygame.locals.MOUSEBUTTONDOWN:
+            #print(pygame.mouse.get_pos())
+            # check if an arrow was clicked
+            for arrow in Game.grid.arrows:
+                if arrow.rect.collidepoint(event.pos):
+                    print(f"Clicked on arrow {arrow.direction}, {arrow.number}")
+                    Game.grid.shift_rooms(arrow.direction, arrow.number)
+            for room in Game.grid.rooms.values():
+                if room.rect.collidepoint(event.pos):
+                    print(f"Clicked on room {room.color}{room.number}")
+                    
     DISPLAYSURF.fill("white")
     Game.grid.draw(DISPLAYSURF)
     pygame.display.update()

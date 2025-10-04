@@ -150,7 +150,7 @@ class Grid:
         # direction: 0 = left, 1 = down, 2 = right, 3 = up
         old_rooms = self.rooms.copy()
         for i in range(self.size):
-            if direction in [0, 1]:
+            if direction in [0, 3]:
                 i_new = (i + 1) % self.size
             else:
                 i_new = (i - 1 + self.size) % self.size
