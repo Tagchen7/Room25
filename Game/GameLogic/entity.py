@@ -1,5 +1,20 @@
 # Contains definitions for game entities like Player, Enemy, Projectile, etc.
 
+class Player:
+    total_amount = 0
+
+    def __init__(self, color):
+        self.color = color
+        self.total_amount += 1
+        self.index = self.total_amount
+        self.name = self.reset_name()
+
+    def reset_name(self):
+        return f"{self.color.capitalize()}_{self.index}"
+    
+    def set_name(self, new_name):
+        self.name = new_name
+
 class Info:
     def __init__(self, player, color):
         self.player = player
