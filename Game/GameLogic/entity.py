@@ -1,4 +1,7 @@
 # Contains definitions for game entities like Player, Enemy, Projectile, etc.
+from typing import Any
+import pygame
+from pygame.locals import *
 
 class Player:
     total_amount = 0
@@ -20,14 +23,42 @@ class Info:
         self.player = player
         self.color = color
 
-class Room:
+class Room(pygame.sprite.Sprite):
     def __init__(self, corner=False, color="grey", number=0):
+        # for sprites/images
+        super().__init__() 
+        self.image = pygame.image.load("Game/Assets/Unknown.png")
+        self.rect = self.image.get_rect()
         # Center = (0, 0)
         self.corner = corner
         self.color = color
         self.number = number
         # whenever someone looks at the room, add the info based on what they see
         self.info = []
+
+    @property
+    def color(self):
+        return self._color
+    
+    @color.setter
+    def color(self, color):
+        self._color = color
+        self.update_image()
+
+    @property
+    def number(self):
+        return self._number
+    
+    @number.setter
+    def number(self, number):
+        self._number = number
+        self.update_image()
+
+    def update_image(self):
+        if self.name() == "Unknown":
+            self.image = pygame.image.load("Game/Assets/Unknown.png")
+        else:
+            self.image = pygame.image.load(f"Game/Assets/{self.color.capitalise()}_{self.number}.png")
 
     def add_info(self, person, color):
         self.info.append(Info(person, color))
