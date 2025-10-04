@@ -5,6 +5,12 @@ class GameState:
     def __init__(self):
         self.players = []
         self.grid = entity.Grid()
+        self.grid.rooms[0, 0].corner = True  # center room is always a corner
+        self.selected_player = None
+        self.selected_grid_room = None
+        self.selected_action = None
+
+        # Test setup
         self.grid.rooms[(0, 0)].color = entity.RED
         self.grid.rooms[(0, 0)].number = 2
         self.grid.rooms[(4, 0)].color = entity.YELLOW

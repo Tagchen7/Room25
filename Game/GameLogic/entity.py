@@ -1,5 +1,6 @@
 # Contains definitions for game entities like Player, Enemy, Projectile, etc.
 from sre_parse import WHITESPACE
+from turtle import circle
 import pygame
 
 # Define some colors
@@ -144,7 +145,7 @@ class Info(pygame.sprite.Sprite):
 class Room(Base_Room):
     sprite_size = (50, 50)
     def __init__(self, corner=False, color=GREY, number=0):
-        super().__init__(corner=False, color=GREY, number=0)
+        super().__init__(corner=corner, color=color, number=number)
         # whenever someone looks at the room, add the info based on what they see
         self.info = []
 
@@ -157,6 +158,9 @@ class Room(Base_Room):
             info.rect.width = self.sprite_size[1] / len(self.info)
             info.rect.bottomleft = (self.rect.bottomleft[0] + i * info.rect.width, self.rect.bottomleft[1])
             info.draw(surface)
+        if self.corner and self.name() == "Unknown":
+            pygame.draw.circle(surface, "blue", self.rect.center, 7.5)
+            
 
 class Shift_Arrow(pygame.sprite.Sprite):
     sprite_size = (50, 50)
@@ -188,7 +192,7 @@ class Grid:
             cx = x - self.size//2
             for y in range(5):
                 cy = y - self.size//2
-                corner = (abs(cx) == abs(cy) and abs(cx) != 1) or (cx!=0 and cy!=0)
+                corner = (cx!=0 and cy!=0) and (abs(cx) != 1 or abs(cy) != 1)
                 self.rooms[(x, y)] = Room(corner=corner)
                 if cx == 0 and cy == 0:
                     self.rooms[(x, y)].color = BLUE
@@ -241,3 +245,14 @@ class Grid:
             elif arrow.direction == 3:  # up
                 arrow.rect.center = ((arrow.number+1.5)*self.room_size[0], 0.5*self.room_size[1])
             arrow.draw(surface)
+
+class Room_Notes(Base_Room):
+    sprite_size = (50, 50)
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.image.load(f"Game/Assets/Room_Changer.png")
+        self.image = pygame.transform.scale(self.image, self.sprite_size)
+        self.rect = self.image.get_rect()
+
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
