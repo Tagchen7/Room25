@@ -1,12 +1,37 @@
 # Contains definitions for game entities like Player, Enemy, Projectile, etc.
+from sre_parse import WHITESPACE
 import pygame
+
+# Define some colors
+RED = (255, 0, 0)
+GREEN = (0, 255, 0) 
+YELLOW = (255, 255, 0)
+BLUE = (0, 255, 255)
+GREY = (180, 180, 180)
+WHITE = (255, 255, 255)
+
+def get_color_name(color=GREY):
+    if color == RED:
+        return "Red"
+    elif color == GREEN:
+        return "Green"
+    elif color == YELLOW:
+        return "Yellow"
+    elif color == BLUE:
+        return "Blue"
+    elif color == WHITE:
+        return "White"
+    elif color == GREY:
+        return "Grey"
+    else:
+        return "Unknown"
 
 class Player:
     total_amount = 0
 
     def __init__(self, color):
         self.color = color
-        self.total_amount += 1
+        Player.total_amount += 1
         self.index = self.total_amount
         self.name = self.reset_name()
 
@@ -16,14 +41,9 @@ class Player:
     def set_name(self, new_name):
         self.name = new_name
 
-class Info:
-    def __init__(self, player, color):
-        self.player = player
-        self.color = color
-
-class Room(pygame.sprite.Sprite):
+class Base_Room(pygame.sprite.Sprite):
     sprite_size = (50, 50)
-    def __init__(self, corner=False, color="grey", number=0):
+    def __init__(self, corner=False, color=GREY, number=0):
         super().__init__()
         self._color = ""
         self._number = 0
@@ -33,8 +53,6 @@ class Room(pygame.sprite.Sprite):
         self.number = number
         self.update_image()
         self.rect = self.image.get_rect()
-        # whenever someone looks at the room, add the info based on what they see
-        self.info = []
 
     @property
     def color(self):
@@ -58,11 +76,8 @@ class Room(pygame.sprite.Sprite):
         if self.name() == "Unknown":
             self.image = pygame.image.load("Game/Assets/Unknown.png")
         else:
-            self.image = pygame.image.load(f"Game/Assets/{self.color.capitalize()}_{self.number}.png")
+            self.image = pygame.image.load(f"Game/Assets/{get_color_name(self.color)}_{self.number}.png")
         self.image = pygame.transform.scale(self.image, self.sprite_size)
-
-    def add_info(self, person, color):
-        self.info.append(Info(person, color))
 
     def __repr__(self) -> str:
         if self.number > 0:
@@ -71,38 +86,77 @@ class Room(pygame.sprite.Sprite):
     
     def name(self):
         # name is organised by a (color, number) tuple
-        names = {("blue", 1): "Central",
-                 ("blue", 2): "Exit",
-                 ("blue", 3): "Key",
-                 ("green", 1): "Empty",
-                 ("green", 2): "Vision",
-                 ("green", 3): "Swapping",
-                 ("green", 4): "Shifting",
-                 ("green", 5): "Portal",
-                 ("green", 6): "Regeneration",
-                 ("green", 7): "Robot",
-                 ("red", 1): "Acid",
-                 ("red", 2): "Death",
-                 ("red", 3): "Trap",
-                 ("red", 4): "Flooded",
-                 ("red", 5): "Shredder",
-                 ("red", 6): "Timer",
-                 ("red", 7): "Paranoia",
-                 ("red", 8): "Illusion",
-                 ("yellow", 1): "Vortex",
-                 ("yellow", 2): "Prison",
-                 ("yellow", 3): "Cold",
-                 ("yellow", 4): "Dark",
-                 ("yellow", 5): "Pivot",
-                 ("yellow", 6): "Jamming",
-                 ("yellow", 7): "M.A.C.",
-                 ("yellow", 8): "Mirror"
+        names = {(BLUE, 1): "Central",
+                 (BLUE, 2): "Exit",
+                 (BLUE, 3): "Key",
+                 (GREEN, 1): "Empty",
+                 (GREEN, 2): "Vision",
+                 (GREEN, 3): "Swapping",
+                 (GREEN, 4): "Shifting",
+                 (GREEN, 5): "Portal",
+                 (GREEN, 6): "Regeneration",
+                 (GREEN, 7): "Robot",
+                 (RED, 1): "Acid",
+                 (RED, 2): "Death",
+                 (RED, 3): "Trap",
+                 (RED, 4): "Flooded",
+                 (RED, 5): "Shredder",
+                 (RED, 6): "Timer",
+                 (RED, 7): "Paranoia",
+                 (RED, 8): "Illusion",
+                 (YELLOW, 1): "Vortex",
+                 (YELLOW, 2): "Prison",
+                 (YELLOW, 3): "Cold",
+                 (YELLOW, 4): "Dark",
+                 (YELLOW, 5): "Pivot",
+                 (YELLOW, 6): "Jamming",
+                 (YELLOW, 7): "M.A.C.",
+                 (YELLOW, 8): "Mirror"
                  }
         return names.get((self.color, self.number), "Unknown")
-    
     	
     def draw(self, surface):
         surface.blit(self.image, self.rect)
+
+class Info(pygame.sprite.Sprite):
+    sprite_size = (50, 20)
+    def __init__(self, player, color):
+        super().__init__()
+        self.player = player
+        self.color = color
+        self.image = pygame.image.load(f"Game/Assets/Color.png")
+        self.image = pygame.transform.scale(self.image, self.sprite_size)
+        self.update_image()
+        self.rect = self.image.get_rect()
+
+    def __repr__(self):
+        return f"{self.player}:{self.color}"
+    
+    def update_image(self):
+        self.image.fill(self.color)
+
+    def draw(self, surface):
+        self.update_image()
+        surface.blit(self.image, self.rect)
+        text = pygame.font.SysFont('arial', 15).render(f"{self.player.index}", True, (0,0,0))
+        surface.blit(text, (self.rect.x + self.rect.width/2 - text.get_width()/2, self.rect.y + self.rect.height/2 - text.get_height()/2))
+
+class Room(Base_Room):
+    sprite_size = (50, 50)
+    def __init__(self, corner=False, color=GREY, number=0):
+        super().__init__(corner=False, color=GREY, number=0)
+        # whenever someone looks at the room, add the info based on what they see
+        self.info = []
+
+    def add_info(self, person, color):
+        self.info.append(Info(person, color))
+    	
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
+        for i, info in enumerate(self.info):
+            info.rect.width = self.sprite_size[1] / len(self.info)
+            info.rect.bottomleft = (self.rect.bottomleft[0] + i * info.rect.width, self.rect.bottomleft[1])
+            info.draw(surface)
 
 class Shift_Arrow(pygame.sprite.Sprite):
     sprite_size = (50, 50)
@@ -134,7 +188,7 @@ class Grid:
                 corner = (abs(cx) == abs(cy) and abs(cx) != 1) or (cx!=0 and cy!=0)
                 self.rooms[(x, y)] = Room(corner=corner)
                 if cx == 0 and cy == 0:
-                    self.rooms[(x, y)].color = "blue"
+                    self.rooms[(x, y)].color = BLUE
                     self.rooms[(x, y)].number = 1
         self.arrows = []
         for i in range(self.size):
