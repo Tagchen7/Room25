@@ -9,7 +9,7 @@ GREEN = (0, 255, 0)
 YELLOW = (255, 255, 0)
 BLUE = (0, 255, 255)
 GREY = (180, 180, 180)
-WHITE = (255, 255, 255)
+WHITE = (235, 235, 235)
 
 def get_color_name(color=GREY):
     if color == RED:
@@ -102,7 +102,7 @@ class Base_Room(pygame.sprite.Sprite):
 
 class Info(pygame.sprite.Sprite):
     sprite_size = (50, 20)
-    def __init__(self, player, color):
+    def __init__(self, color, player=None):
         super().__init__()
         self.player = player
         self.color = color
@@ -120,8 +120,9 @@ class Info(pygame.sprite.Sprite):
     def draw(self, surface):
         self.update_image()
         surface.blit(self.image, self.rect)
-        text = pygame.font.SysFont('arial', 15).render(f"{self.player.index}", True, (0,0,0))
-        surface.blit(text, (self.rect.x + self.rect.width/2 - text.get_width()/2, self.rect.y + self.rect.height/2 - text.get_height()/2))
+        if self.player is not None:
+            text = pygame.font.SysFont('arial', 15).render(f"{self.player.index}", True, (0,0,0))
+            surface.blit(text, (self.rect.x + self.rect.width/2 - text.get_width()/2, self.rect.y + self.rect.height/2 - text.get_height()/2))
 
 class Room(Base_Room):
     sprite_size = (50, 50)
@@ -130,8 +131,8 @@ class Room(Base_Room):
         # whenever someone looks at the room, add the info based on what they see
         self.info = []
 
-    def add_info(self, person, color):
-        self.info.append(Info(person, color))
+    def add_info(self, color, player):
+        self.info.append(Info(color=color, player=player))
     	
     def draw(self, surface):
         self.update_image()
@@ -237,22 +238,38 @@ class Room_Notes():
         self.green_rooms = [Base_Room(color=GREEN, number=i) for i in range(1, 8)]
         self.yellow_rooms = [Base_Room(color=YELLOW, number=i) for i in range(1, 9)]
         self.red_rooms = [Base_Room(color=RED, number=i) for i in range(1, 9)]
+        self.undo_room = Base_Room(color=GREY, number=0)
         for room in self.all_rooms():
             room.rect = room.image.get_rect()
 
     def all_rooms(self):
-        return self.blue_rooms + self.green_rooms + self.yellow_rooms + self.red_rooms
+        return self.blue_rooms + self.green_rooms + self.yellow_rooms + self.red_rooms + [self.undo_room]
 
     def draw(self, surface):
         for room in self.blue_rooms:
             room.rect.center = (self.starting_center[0] + self.sprite_size[0] * (room.number - 1), self.starting_center[1])
-            room.draw(surface)
+        self.undo_room.rect.center = (self.starting_center[0] + self.sprite_size[0] * 6, self.starting_center[1])
         for room in self.green_rooms:
             room.rect.center = (self.starting_center[0] + self.sprite_size[0] * (room.number - 1), self.starting_center[1] + self.sprite_size[1])
-            room.draw(surface)
         for room in self.yellow_rooms:
             room.rect.center = (self.starting_center[0] + self.sprite_size[0] * (room.number - 1), self.starting_center[1] + 2 * self.sprite_size[1])
-            room.draw(surface)
         for room in self.red_rooms:
             room.rect.center = (self.starting_center[0] + self.sprite_size[0] * (room.number - 1), self.starting_center[1] + 3 * self.sprite_size[1])
+        for room in self.all_rooms():
+            room.draw(surface)
+
+class Color_Notes():
+    sprite_size = (50, 50)
+    starting_center = (400, 50)
+    note_colors = [BLUE, GREEN, YELLOW, RED, GREY, WHITE]
+
+    def __init__(self):
+        self.notes = [Info(color=color) for color in self.note_colors]
+        for note in self.notes:
+            note.image = pygame.transform.scale(note.image, self.sprite_size)
+            note.rect = note.image.get_rect()
+
+    def draw(self, surface):
+        for i, room in enumerate(self.notes):
+            room.rect.center = (self.starting_center[0], self.starting_center[1] + self.sprite_size[1] * i)
             room.draw(surface)
