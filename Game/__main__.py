@@ -1,6 +1,6 @@
 import sys
 import pygame
-from pygame.locals import *
+import pygame.locals
 from Game.GameLogic.game import GameState
 
 pygame.init()
@@ -15,7 +15,7 @@ Game = GameState()
 
 while True:
     for event in pygame.event.get():
-        if event.type == QUIT:
+        if event.type == pygame.locals.QUIT:
             pygame.quit()
             sys.exit()
     DISPLAYSURF.fill("white")

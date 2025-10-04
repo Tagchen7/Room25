@@ -1,7 +1,5 @@
 # Contains definitions for game entities like Player, Enemy, Projectile, etc.
-from typing import Any
 import pygame
-from pygame.locals import *
 
 class Player:
     total_amount = 0
