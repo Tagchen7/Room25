@@ -24,15 +24,15 @@ class Info:
         self.color = color
 
 class Room(pygame.sprite.Sprite):
+    sprite_size = (50, 50)
     def __init__(self, corner=False, color="grey", number=0):
-        # for sprites/images
-        super().__init__() 
-        self.image = pygame.image.load("Game/Assets/Unknown.png")
-        self.rect = self.image.get_rect()
+        super().__init__()
         # Center = (0, 0)
         self.corner = corner
         self.color = color
         self.number = number
+        self.update_image()
+        self.rect = self.image.get_rect()
         # whenever someone looks at the room, add the info based on what they see
         self.info = []
 
@@ -59,6 +59,7 @@ class Room(pygame.sprite.Sprite):
             self.image = pygame.image.load("Game/Assets/Unknown.png")
         else:
             self.image = pygame.image.load(f"Game/Assets/{self.color.capitalise()}_{self.number}.png")
+        self.image = pygame.transform.scale(self.image, self.sprite_size)
 
     def add_info(self, person, color):
         self.info.append(Info(person, color))
