@@ -172,6 +172,9 @@ class Shift_Arrow(pygame.sprite.Sprite):
     def draw(self, surface):
         surface.blit(self.image, self.rect)  
     
+    def __eq__(self, other):
+        return self.direction == other.direction and self.number == other.number
+    
 class Grid:
     size = 5
     room_size = (50, 50)
@@ -202,6 +205,9 @@ class Grid:
     def shift_rooms(self, direction:int, num:int):
         # direction, number == Shift_Arrow.direction, Shift_Arrow.number
         # direction: 0 = left, 1 = down, 2 = right, 3 = up
+        # all valid shifts have a shift arrow
+        if Shift_Arrow(direction, num) not in self.arrows:
+            return
         old_rooms = self.rooms.copy()
         for i in range(self.size):
             if direction in [0, 3]:
