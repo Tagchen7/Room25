@@ -4,7 +4,10 @@ from pygame.locals import *
 
 pygame.init()
 
-DISPLAYSURF = pygame.display.set_mode((300,300))
+SCREEN_WIDTH = 600
+SCREEN_HEIGHT = 400
+
+DISPLAYSURF = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 while True:
     for event in pygame.event.get():
         if event.type == QUIT:
