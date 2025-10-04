@@ -28,12 +28,15 @@ while True:
             for room in Game.grid.rooms.values():
                 if room.rect.collidepoint(event.pos):
                     print(f"Clicked on room {room.color}{room.number}")
+                    Game.grid_room_clicked(room)
             for room in Game.room_notes.all_rooms():
                 if room.rect.collidepoint(event.pos):
                     print(f"Clicked on note room {room.color}{room.number}")
+                    Game.room_note_clicked(room)
             for note in Game.color_notes.notes:
                 if note.rect.collidepoint(event.pos):
                     print(f"Clicked on color note {note.color}")
+                    Game.color_note_clicked(note.color)
                     
     DISPLAYSURF.fill("white")
     Game.draw(DISPLAYSURF)

@@ -130,6 +130,7 @@ class Room(Base_Room):
         super().__init__(corner=corner, color=color, number=number)
         # whenever someone looks at the room, add the info based on what they see
         self.info = []
+        self.is_selected = False
 
     def add_info(self, color, player):
         self.info.append(Info(color=color, player=player))
@@ -137,12 +138,15 @@ class Room(Base_Room):
     def draw(self, surface):
         self.update_image()
         surface.blit(self.image, self.rect)
-        for i, info in enumerate(self.info):
-            info.rect.width = self.sprite_size[1] / len(self.info)
-            info.rect.bottomleft = (self.rect.bottomleft[0] + i * info.rect.width, self.rect.bottomleft[1])
-            info.draw(surface)
+        if self.number == 0:
+            for i, info in enumerate(self.info):
+                info.rect.width = self.sprite_size[1] / len(self.info)
+                info.rect.bottomleft = (self.rect.bottomleft[0] + i * info.rect.width, self.rect.bottomleft[1])
+                info.draw(surface)
         if self.corner and self.name() == "Unknown":
             pygame.draw.circle(surface, "blue", self.rect.center, 7.5)
+        if self.is_selected:
+            pygame.draw.circle(surface, "green", self.rect.center, 5.5)
             
 
 class Shift_Arrow(pygame.sprite.Sprite):
@@ -265,11 +269,16 @@ class Color_Notes():
 
     def __init__(self):
         self.notes = [Info(color=color) for color in self.note_colors]
-        for note in self.notes:
+        self.special_note = Info(color=GREY, player=None)
+        for note in self.all_notes():
             note.image = pygame.transform.scale(note.image, self.sprite_size)
             note.rect = note.image.get_rect()
+
+    def all_notes(self):
+        return self.notes + [self.special_note]
 
     def draw(self, surface):
         for i, room in enumerate(self.notes):
             room.rect.center = (self.starting_center[0], self.starting_center[1] + self.sprite_size[1] * i)
             room.draw(surface)
+
