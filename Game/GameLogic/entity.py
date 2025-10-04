@@ -108,9 +108,10 @@ class Room(pygame.sprite.Sprite):
 
 class Shift_Arrow(pygame.sprite.Sprite):
     sprite_size = (50, 50)
-    def __init__(self, direction):
+    def __init__(self, direction, number):
         super().__init__()
         self.direction = direction
+        self.number = number
         self.image = pygame.image.load(f"Game/Assets/Shift_Arrow.png")
         self.image = pygame.transform.scale(self.image, self.sprite_size)
         self.image = pygame.transform.rotate(self.image, 90 * direction)
@@ -137,9 +138,18 @@ class Grid:
                 if cx == 0 and cy == 0:
                     self.rooms[(x, y)].color = "blue"
                     self.rooms[(x, y)].number = 1
+        self.arrows = []
+        for i in range(self.size):
+            ci = i - self.size//2
+            if ci != 0:
+                self.arrows.append(Shift_Arrow(0, i))  # right
+                self.arrows.append(Shift_Arrow(1, i))  # down
+                self.arrows.append(Shift_Arrow(2, i))  # left
+                self.arrows.append(Shift_Arrow(3, i))  # up
 
     def shift_rooms(self, direction:int, num:int):
-        # direction: 0 = right, 1 = down, 2 = left, 3 = up
+        # direction, number == Shift_Arrow.direction, Shift_Arrow.number
+        # direction: 0 = left, 1 = down, 2 = right, 3 = up
         old_rooms = self.rooms.copy()
         for i in range(self.size):
             if direction in [0, 1]:
@@ -163,3 +173,13 @@ class Grid:
         for pos, room in self.rooms.items():
             room.rect.center = ((pos[0]+1.5)*self.room_size[0], (pos[1]+1.5)*self.room_size[1])
             room.draw(surface)
+        for arrow in self.arrows:
+            if arrow.direction == 0:  # left
+                arrow.rect.center = (0.5*self.room_size[0], (arrow.number+1.5)*self.room_size[1])
+            elif arrow.direction == 1:  # down
+                arrow.rect.center = ((arrow.number+1.5)*self.room_size[0], (self.size+1.5)*self.room_size[1])
+            elif arrow.direction == 2:  # right
+                arrow.rect.center = ((self.size+1.5)*self.room_size[0], (arrow.number+1.5)*self.room_size[1])
+            elif arrow.direction == 3:  # up
+                arrow.rect.center = ((arrow.number+1.5)*self.room_size[0], 0.5*self.room_size[1])
+            arrow.draw(surface)
