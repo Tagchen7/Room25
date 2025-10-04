@@ -5,8 +5,8 @@ from Game.GameLogic.game import GameState
 
 pygame.init()
 
-SCREEN_WIDTH = 600
-SCREEN_HEIGHT = 400
+SCREEN_WIDTH = 900
+SCREEN_HEIGHT = 600
 
 DISPLAYSURF = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('Room25 Helper')
@@ -28,7 +28,10 @@ while True:
             for room in Game.grid.rooms.values():
                 if room.rect.collidepoint(event.pos):
                     print(f"Clicked on room {room.color}{room.number}")
+            for room in Game.room_notes.all_rooms():
+                if room.rect.collidepoint(event.pos):
+                    print(f"Clicked on note room {room.color}{room.number}")
                     
     DISPLAYSURF.fill("white")
-    Game.grid.draw(DISPLAYSURF)
+    Game.draw(DISPLAYSURF)
     pygame.display.update()

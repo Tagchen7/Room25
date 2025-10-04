@@ -5,7 +5,7 @@ class GameState:
     def __init__(self):
         self.players = []
         self.grid = entity.Grid()
-        self.grid.rooms[0, 0].corner = True  # center room is always a corner
+        self.room_notes = entity.Room_Notes()
         self.selected_player = None
         self.selected_grid_room = None
         self.selected_action = None
@@ -26,3 +26,7 @@ class GameState:
         self.grid.rooms[(1, 1)].info.append(entity.Info(pr, entity.BLUE))
         self.grid.rooms[(1, 1)].info.append(entity.Info(pr, entity.GREY))
         self.grid.rooms[(1, 1)].info.append(entity.Info(pr, entity.WHITE))
+    
+    def draw(self, surface):
+        self.grid.draw(surface)
+        self.room_notes.draw(surface)

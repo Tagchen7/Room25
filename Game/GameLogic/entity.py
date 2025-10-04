@@ -46,32 +46,12 @@ class Base_Room(pygame.sprite.Sprite):
     sprite_size = (50, 50)
     def __init__(self, corner=False, color=GREY, number=0):
         super().__init__()
-        self._color = ""
-        self._number = 0
         # Center = (0, 0)
         self.corner = corner
         self.color = color
         self.number = number
         self.update_image()
         self.rect = self.image.get_rect()
-
-    @property
-    def color(self):
-        return self._color
-    
-    @color.setter
-    def color(self, color):
-        self._color = color
-        self.update_image()
-
-    @property
-    def number(self):
-        return self._number
-    
-    @number.setter
-    def number(self, number):
-        self._number = number
-        self.update_image()
 
     def update_image(self):
         if self.name() == "Unknown":
@@ -117,6 +97,7 @@ class Base_Room(pygame.sprite.Sprite):
         return names.get((self.color, self.number), "Unknown")
     	
     def draw(self, surface):
+        self.update_image()
         surface.blit(self.image, self.rect)
 
 class Info(pygame.sprite.Sprite):
@@ -153,6 +134,7 @@ class Room(Base_Room):
         self.info.append(Info(person, color))
     	
     def draw(self, surface):
+        self.update_image()
         surface.blit(self.image, self.rect)
         for i, info in enumerate(self.info):
             info.rect.width = self.sprite_size[1] / len(self.info)
@@ -246,13 +228,31 @@ class Grid:
                 arrow.rect.center = ((arrow.number+1.5)*self.room_size[0], 0.5*self.room_size[1])
             arrow.draw(surface)
 
-class Room_Notes(Base_Room):
+class Room_Notes():
     sprite_size = (50, 50)
+    starting_center = (50, 400)
+
     def __init__(self):
-        super().__init__()
-        self.image = pygame.image.load(f"Game/Assets/Room_Changer.png")
-        self.image = pygame.transform.scale(self.image, self.sprite_size)
-        self.rect = self.image.get_rect()
+        self.blue_rooms = [Base_Room(color=BLUE, number=i) for i in range(1, 4)]
+        self.green_rooms = [Base_Room(color=GREEN, number=i) for i in range(1, 8)]
+        self.yellow_rooms = [Base_Room(color=YELLOW, number=i) for i in range(1, 9)]
+        self.red_rooms = [Base_Room(color=RED, number=i) for i in range(1, 9)]
+        for room in self.all_rooms():
+            room.rect = room.image.get_rect()
+
+    def all_rooms(self):
+        return self.blue_rooms + self.green_rooms + self.yellow_rooms + self.red_rooms
 
     def draw(self, surface):
-        surface.blit(self.image, self.rect)
+        for room in self.blue_rooms:
+            room.rect.center = (self.starting_center[0] + self.sprite_size[0] * (room.number - 1), self.starting_center[1])
+            room.draw(surface)
+        for room in self.green_rooms:
+            room.rect.center = (self.starting_center[0] + self.sprite_size[0] * (room.number - 1), self.starting_center[1] + self.sprite_size[1])
+            room.draw(surface)
+        for room in self.yellow_rooms:
+            room.rect.center = (self.starting_center[0] + self.sprite_size[0] * (room.number - 1), self.starting_center[1] + 2 * self.sprite_size[1])
+            room.draw(surface)
+        for room in self.red_rooms:
+            room.rect.center = (self.starting_center[0] + self.sprite_size[0] * (room.number - 1), self.starting_center[1] + 3 * self.sprite_size[1])
+            room.draw(surface)
