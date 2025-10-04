@@ -27,6 +27,8 @@ class Room(pygame.sprite.Sprite):
     sprite_size = (50, 50)
     def __init__(self, corner=False, color="grey", number=0):
         super().__init__()
+        self._color = ""
+        self._number = 0
         # Center = (0, 0)
         self.corner = corner
         self.color = color
@@ -58,7 +60,7 @@ class Room(pygame.sprite.Sprite):
         if self.name() == "Unknown":
             self.image = pygame.image.load("Game/Assets/Unknown.png")
         else:
-            self.image = pygame.image.load(f"Game/Assets/{self.color.capitalise()}_{self.number}.png")
+            self.image = pygame.image.load(f"Game/Assets/{self.color.capitalize()}_{self.number}.png")
         self.image = pygame.transform.scale(self.image, self.sprite_size)
 
     def add_info(self, person, color):
@@ -100,12 +102,31 @@ class Room(pygame.sprite.Sprite):
                  }
         return names.get((self.color, self.number), "Unknown")
     
+    	
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
+
+class Shift_Arrow(pygame.sprite.Sprite):
+    sprite_size = (50, 50)
+    def __init__(self, direction):
+        super().__init__()
+        self.direction = direction
+        self.image = pygame.image.load(f"Game/Assets/Shift_Arrow.png")
+        self.image = pygame.transform.scale(self.image, self.sprite_size)
+        self.image = pygame.transform.rotate(self.image, 90 * direction)
+        self.rect = self.image.get_rect()
+
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)  
+    
 class Grid:
     size = 5
+    room_size = (50, 50)
     def __init__(self):
         # self.rooms have a tuple denoting position as key (x, y) = (0, 1) and a room at the position
         # room positions are in range(size)
         # center room is always B1
+        Room.sprite_size = self.room_size
         self.rooms = {}
         for x in range(5):
             cx = x - self.size//2
@@ -117,14 +138,15 @@ class Grid:
                     self.rooms[(x, y)].color = "blue"
                     self.rooms[(x, y)].number = 1
 
-    def shift_rooms(self, row:bool, num:int, forward:bool):
+    def shift_rooms(self, direction:int, num:int):
+        # direction: 0 = right, 1 = down, 2 = left, 3 = up
         old_rooms = self.rooms.copy()
         for i in range(self.size):
-            if forward:
+            if direction in [0, 1]:
                 i_new = (i + 1) % self.size
             else:
                 i_new = (i - 1 + self.size) % self.size
-            if row:
+            if direction % 2 == 0:
                 x_new, y_new = i_new, num
                 x_old, y_old = i, num
             else:
@@ -136,3 +158,8 @@ class Grid:
         temp = self.rooms[pos_1]
         self.rooms[pos_1] = self.rooms[pos_2]
         self.rooms[pos_2] = temp
+
+    def draw(self, surface):
+        for pos, room in self.rooms.items():
+            room.rect.center = ((pos[0]+1.5)*self.room_size[0], (pos[1]+1.5)*self.room_size[1])
+            room.draw(surface)
