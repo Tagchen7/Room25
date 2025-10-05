@@ -296,7 +296,7 @@ class Color_Notes():
     starting_center = (400, 50)
 
     def __init__(self):
-        self.notes = [Info(color=color) for color in ROOMCOLOR]
+        self.notes = [Info(color=color) for color in ROOMCOLOR.values()]
         self.undo_note = Info(color=ROOMCOLOR["white"], player=None)
         self.swap_note = Info(color=ROOMCOLOR["white"], player=None)
         self.swap = False
