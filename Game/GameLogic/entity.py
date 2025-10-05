@@ -15,7 +15,7 @@ ROOMCOLOR = {
 
 # Define some colors for players
 PLAYERCOLOR = {
-    "brown" : (250, 250, 125),
+    "brown" : (150, 75, 0),
     "pink" : (250, 0, 250),
     "yellow" : (250, 250, 0),
     "orange" : (250, 125, 0),
