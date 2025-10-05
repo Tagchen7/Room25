@@ -7,7 +7,7 @@ class GameState:
         self.grid = entity.Grid()
         self.room_notes = entity.Room_Notes()
         self.color_notes = entity.Color_Notes()
-        self.selected_player = entity.Player(color=entity.RED)
+        self.selected_player = entity.Player(color=entity.PLAYERCOLOR["brown"])
         self.selected_grid_room = None
         self.old_grid_room = None
         self.old_arrow = None

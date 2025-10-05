@@ -3,26 +3,40 @@ from sre_parse import WHITESPACE
 from turtle import circle
 import pygame
 
-# Define some colors
-RED = (255, 0, 0)
-GREEN = (0, 255, 0) 
-YELLOW = (255, 255, 0)
-BLUE = (0, 255, 255)
-GREY = (180, 180, 180)
-WHITE = (235, 235, 235)
+# Define some colors for rooms
+ROOMCOLOR = {
+    "red" : (255, 0, 0),
+    "green" : (0, 255, 0),
+    "yellow" : (255, 255, 0),
+    "blue" : (0, 255, 255),
+    "grey" : (180, 180, 180),
+    "white" : (235, 235, 235)
+}
 
-def get_color_name(color=GREY):
-    if color == RED:
+# Define some colors for players
+PLAYERCOLOR = {
+    "brown" : (250, 250, 125),
+    "pink" : (250, 0, 250),
+    "yellow" : (250, 250, 0),
+    "orange" : (250, 125, 0),
+    "grey" : (150, 150, 150),
+    "blue" : (0, 0, 250),
+    "green" : (0, 250, 0),
+    "red" : (250, 0, 0)
+}
+
+def get_color_name(color=ROOMCOLOR["grey"]):
+    if color == ROOMCOLOR["red"]:
         return "Red"
-    elif color == GREEN:
+    elif color == ROOMCOLOR["green"]:
         return "Green"
-    elif color == YELLOW:
+    elif color == ROOMCOLOR["yellow"]:
         return "Yellow"
-    elif color == BLUE:
+    elif color == ROOMCOLOR["blue"]:
         return "Blue"
-    elif color == WHITE:
+    elif color == ROOMCOLOR["white"]:
         return "White"
-    elif color == GREY:
+    elif color == ROOMCOLOR["grey"]:
         return "Grey"
     else:
         return "Unknown"
@@ -37,7 +51,7 @@ class Player:
 
 class Base_Room(pygame.sprite.Sprite):
     sprite_size = (50, 50)
-    def __init__(self, corner=False, color=GREY, number=0):
+    def __init__(self, corner=False, color=ROOMCOLOR["grey"], number=0):
         super().__init__()
         # Center = (0, 0)
         self.corner = corner
@@ -60,32 +74,32 @@ class Base_Room(pygame.sprite.Sprite):
     
     def name(self):
         # name is organised by a (color, number) tuple
-        names = {(BLUE, 1): "Central",
-                 (BLUE, 2): "Exit",
-                 (BLUE, 3): "Key",
-                 (GREEN, 1): "Empty",
-                 (GREEN, 2): "Vision",
-                 (GREEN, 3): "Swapping",
-                 (GREEN, 4): "Shifting",
-                 (GREEN, 5): "Portal",
-                 (GREEN, 6): "Regeneration",
-                 (GREEN, 7): "Robot",
-                 (RED, 1): "Acid",
-                 (RED, 2): "Death",
-                 (RED, 3): "Trap",
-                 (RED, 4): "Flooded",
-                 (RED, 5): "Shredder",
-                 (RED, 6): "Timer",
-                 (RED, 7): "Paranoia",
-                 (RED, 8): "Illusion",
-                 (YELLOW, 1): "Vortex",
-                 (YELLOW, 2): "Prison",
-                 (YELLOW, 3): "Cold",
-                 (YELLOW, 4): "Dark",
-                 (YELLOW, 5): "Pivot",
-                 (YELLOW, 6): "Jamming",
-                 (YELLOW, 7): "M.A.C.",
-                 (YELLOW, 8): "Mirror"
+        names = {(ROOMCOLOR["blue"], 1): "Central",
+                 (ROOMCOLOR["blue"], 2): "Exit",
+                 (ROOMCOLOR["blue"], 3): "Key",
+                 (ROOMCOLOR["green"], 1): "Empty",
+                 (ROOMCOLOR["green"], 2): "Vision",
+                 (ROOMCOLOR["green"], 3): "Swapping",
+                 (ROOMCOLOR["green"], 4): "Shifting",
+                 (ROOMCOLOR["green"], 5): "Portal",
+                 (ROOMCOLOR["green"], 6): "Regeneration",
+                 (ROOMCOLOR["green"], 7): "Robot",
+                 (ROOMCOLOR["red"], 1): "Acid",
+                 (ROOMCOLOR["red"], 2): "Death",
+                 (ROOMCOLOR["red"], 3): "Trap",
+                 (ROOMCOLOR["red"], 4): "Flooded",
+                 (ROOMCOLOR["red"], 5): "Shredder",
+                 (ROOMCOLOR["red"], 6): "Timer",
+                 (ROOMCOLOR["red"], 7): "Paranoia",
+                 (ROOMCOLOR["red"], 8): "Illusion",
+                 (ROOMCOLOR["yellow"], 1): "Vortex",
+                 (ROOMCOLOR["yellow"], 2): "Prison",
+                 (ROOMCOLOR["yellow"], 3): "Cold",
+                 (ROOMCOLOR["yellow"], 4): "Dark",
+                 (ROOMCOLOR["yellow"], 5): "Pivot",
+                 (ROOMCOLOR["yellow"], 6): "Jamming",
+                 (ROOMCOLOR["yellow"], 7): "M.A.C.",
+                 (ROOMCOLOR["yellow"], 8): "Mirror"
                  }
         return names.get((self.color, self.number), "Unknown")
     	
@@ -118,7 +132,7 @@ class Info(pygame.sprite.Sprite):
 class Room(Base_Room):
     sprite_size = (50, 50)
     show_info = False
-    def __init__(self, corner=False, color=GREY, number=0):
+    def __init__(self, corner=False, color=ROOMCOLOR["grey"], number=0):
         super().__init__(corner=corner, color=color, number=number)
         # whenever someone looks at the room, add the info based on what they see
         self.info = []
@@ -143,7 +157,7 @@ class Room(Base_Room):
         if self.corner and self.name() == "Unknown":
             pygame.draw.circle(surface, "blue", self.rect.center, 7.5)
         if self.was_selected:
-            pygame.draw.circle(surface, GREY, self.rect.center, 5.5)
+            pygame.draw.circle(surface, ROOMCOLOR["grey"], self.rect.center, 5.5)
         if self.is_selected:
             pygame.draw.circle(surface, "green", self.rect.center, 5.5)
             
@@ -187,7 +201,7 @@ class Grid:
                 corner = (cx!=0 and cy!=0) and (abs(cx) != 1 or abs(cy) != 1)
                 self.rooms[(x, y)] = Room(corner=corner)
                 if cx == 0 and cy == 0:
-                    self.rooms[(x, y)].color = BLUE
+                    self.rooms[(x, y)].color = ROOMCOLOR["blue"]
                     self.rooms[(x, y)].number = 1
         self.arrows = []
         for i in range(self.size):
@@ -253,11 +267,11 @@ class Room_Notes():
     starting_center = (50, 400)
 
     def __init__(self):
-        self.blue_rooms = [Base_Room(color=BLUE, number=i) for i in range(1, 4)]
-        self.green_rooms = [Base_Room(color=GREEN, number=i) for i in range(1, 8)]
-        self.yellow_rooms = [Base_Room(color=YELLOW, number=i) for i in range(1, 9)]
-        self.red_rooms = [Base_Room(color=RED, number=i) for i in range(1, 9)]
-        self.undo_room = Base_Room(color=GREY, number=0)
+        self.blue_rooms = [Base_Room(color=ROOMCOLOR["blue"], number=i) for i in range(1, 4)]
+        self.green_rooms = [Base_Room(color=ROOMCOLOR["green"], number=i) for i in range(1, 8)]
+        self.yellow_rooms = [Base_Room(color=ROOMCOLOR["yellow"], number=i) for i in range(1, 9)]
+        self.red_rooms = [Base_Room(color=ROOMCOLOR["red"], number=i) for i in range(1, 9)]
+        self.undo_room = Base_Room(color=ROOMCOLOR["grey"], number=0)
         for room in self.all_rooms():
             room.rect = room.image.get_rect()
 
@@ -280,12 +294,11 @@ class Room_Notes():
 class Color_Notes():
     sprite_size = (50, 50)
     starting_center = (400, 50)
-    note_colors = [BLUE, GREEN, YELLOW, RED, GREY, WHITE]
 
     def __init__(self):
-        self.notes = [Info(color=color) for color in self.note_colors]
-        self.undo_note = Info(color=WHITE, player=None)
-        self.swap_note = Info(color=WHITE, player=None)
+        self.notes = [Info(color=color) for color in ROOMCOLOR]
+        self.undo_note = Info(color=ROOMCOLOR["white"], player=None)
+        self.swap_note = Info(color=ROOMCOLOR["white"], player=None)
         self.swap = False
         for note in self.all_notes():
             note.image = pygame.transform.scale(note.image, self.sprite_size)
@@ -299,9 +312,9 @@ class Color_Notes():
     def swap(self, swap_selected:bool):
         self._swap = swap_selected
         if self.swap:
-            self.swap_note.color = GREEN # type: ignore GREEN and WHITE are both colors
+            self.swap_note.color = ROOMCOLOR["green"]
         else:
-            self.swap_note.color = WHITE
+            self.swap_note.color = ROOMCOLOR["white"]
 
     def all_notes(self):
         return self.notes + [self.undo_note] + [self.swap_note]
@@ -321,3 +334,10 @@ class Color_Notes():
                 image = pygame.transform.scale(image, (30, 30))
                 surface.blit(image, (note.rect.centerx - image.get_width()/2, note.rect.centery - image.get_height()/2))
 
+class Player_Notes():
+    sprite_size = (50, 50)
+    def __init__(self) -> None:
+        self.players = []
+
+    def add_player(self, player:Player):
+        self.players.append(player)
