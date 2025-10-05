@@ -122,14 +122,10 @@ class Text_Sprite(pygame.sprite.Sprite):
             surface.blit(text, (self.rect.x + self.rect.width/2 - text.get_width()/2, self.rect.y + self.rect.height/2 - text.get_height()/2))
 
 class Player(Text_Sprite):
-    total_amount = 0
-
-    def __init__(self, color):
+    def __init__(self, color, number=0):
         super().__init__(color=color)
         self.color = color
-        Player.total_amount += 1
-        self.number = self.total_amount
-        self.text = self.number
+        self.number = number
         self.is_selected = False
 
     def draw(self, surface):
@@ -366,12 +362,22 @@ class Color_Notes():
 class Player_Notes():
     sprite_size = (50, 50)
     starting_center = (500, 0)
+    selection_center = (100, 200)
 
     def __init__(self) -> None:
         self.players = []
+        self.possible_players = [Player(color=color, number=0) for color in PLAYERCOLOR.values()]
 
-    def add_player(self, player:Player):
-        self.players.append(player)
+    def draw_selection(self, surface):
+        for i, player in enumerate(self.possible_players):
+            player.rect.center = (self.selection_center[0]+ self.sprite_size[0] * i, self.selection_center[1])
+            player.draw(surface)
+
+    def finalise_players(self):
+        for player in self.players.copy():
+            if player.number == 0:
+                self.players.remove(player)
+        self.players = sorted(self.players, key=lambda player: player.number)
 
     def draw(self, surface):
         for player in self.players:
