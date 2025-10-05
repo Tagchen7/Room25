@@ -9,15 +9,26 @@ class GameState:
         self.color_notes = entity.Color_Notes()
         self.selected_player = entity.Player(color=entity.RED)
         self.selected_grid_room = None
-        self.selected_action = None
+        self.old_selected_grid_room = None
     
     def draw(self, surface):
         self.grid.draw(surface)
         self.room_notes.draw(surface)
         self.color_notes.draw(surface)
 
+    def before_any_click(self):
+        if self.old_selected_grid_room:
+            self.old_selected_grid_room.was_selected = False
+        self.old_selected_grid_room = None
+
     def grid_room_clicked(self, room):
         if self.selected_grid_room:
+            if self.color_notes.swap:
+                # Swap the the two rooms
+                self.grid.swap_rooms(self.selected_grid_room, room)
+                self.color_notes.swap = False
+                self.old_selected_grid_room = self.selected_grid_room
+                self.old_selected_grid_room.was_selected = True
             self.selected_grid_room.is_selected = False
         self.selected_grid_room = room
         room.is_selected = True
@@ -28,8 +39,12 @@ class GameState:
         if self.selected_grid_room:
             if note == self.color_notes.undo_note:
                 self.selected_grid_room.remove_info()
+            if note == self.color_notes.swap_note:
+                self.color_notes.swap = not self.color_notes.swap
+                print(self.color_notes.swap)
             else:
                 self.selected_grid_room.add_info(note.color, self.selected_player)
+
         
     def room_note_clicked(self, room):
         # Implement logic for when a room note is clicked

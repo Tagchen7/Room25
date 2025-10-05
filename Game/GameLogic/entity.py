@@ -110,9 +110,6 @@ class Info(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, self.sprite_size)
         self.rect = self.image.get_rect()
         self.update_image()
-
-    def __repr__(self):
-        return f"{self.player}:{self.color}"
     
     def update_image(self):
         self.image = pygame.transform.scale(self.image, self.rect.size)
@@ -133,6 +130,7 @@ class Room(Base_Room):
         # whenever someone looks at the room, add the info based on what they see
         self.info = []
         self.is_selected = False
+        self.was_selected = False
 
     def add_info(self, color, player):
         self.info.append(Info(color=color, player=player))
@@ -151,6 +149,8 @@ class Room(Base_Room):
                 info.draw(surface)
         if self.corner and self.name() == "Unknown":
             pygame.draw.circle(surface, "blue", self.rect.center, 7.5)
+        if self.was_selected:
+            pygame.draw.circle(surface, "orange", self.rect.center, 5.5)
         if self.is_selected:
             pygame.draw.circle(surface, "green", self.rect.center, 5.5)
             
@@ -219,10 +219,17 @@ class Grid:
                 x_old, y_old = num, i
             self.rooms[(x_new, y_new)] = old_rooms[(x_old, y_old)]
     
-    def swap_rooms(self, pos_1:tuple, pos_2:tuple):
-        temp = self.rooms[pos_1]
-        self.rooms[pos_1] = self.rooms[pos_2]
-        self.rooms[pos_2] = temp
+    def get_room_pos(self, room:Room):
+        for pos, r in self.rooms.items():
+            if r == room:
+                return pos
+        return None
+    
+    def swap_rooms(self, room1, room2):
+        pos_1 = self.get_room_pos(room1)
+        pos_2 = self.get_room_pos(room2)
+        self.rooms[pos_1] = room2
+        self.rooms[pos_2] = room1
 
     def draw(self, surface):
         for pos, room in self.rooms.items():
@@ -279,19 +286,39 @@ class Color_Notes():
     def __init__(self):
         self.notes = [Info(color=color) for color in self.note_colors]
         self.undo_note = Info(color=WHITE, player=None)
+        self.swap_note = Info(color=WHITE, player=None)
+        self.swap = False
         for note in self.all_notes():
             note.image = pygame.transform.scale(note.image, self.sprite_size)
             note.rect = note.image.get_rect()
+    
+    @property
+    def swap(self):
+        return self._swap
+
+    @swap.setter
+    def swap(self, swap_selected:bool):
+        self._swap = swap_selected
+        if self.swap:
+            self.swap_note.color = GREEN # type: ignore GREEN and WHITE are both colors
+        else:
+            self.swap_note.color = WHITE
 
     def all_notes(self):
-        return self.notes + [self.undo_note]
+        return self.notes + [self.undo_note] + [self.swap_note]
 
     def draw(self, surface):
         for i, note in enumerate(self.all_notes()):
             note.rect.center = (self.starting_center[0], self.starting_center[1] + self.sprite_size[1] * i)
+            if note == self.swap_note:
+                note.rect.center = (self.starting_center[0] - self.sprite_size[0], self.starting_center[1] + self.sprite_size[1] * (i-1))
             note.draw(surface)
             if note == self.undo_note:
                 image = pygame.image.load(f"Game/Assets/X.png")
+                image = pygame.transform.scale(image, (30, 30))
+                surface.blit(image, (note.rect.centerx - image.get_width()/2, note.rect.centery - image.get_height()/2))
+            if note == self.swap_note:
+                image = pygame.image.load(f"Game/Assets/Swap.png")
                 image = pygame.transform.scale(image, (30, 30))
                 surface.blit(image, (note.rect.centerx - image.get_width()/2, note.rect.centery - image.get_height()/2))
 
