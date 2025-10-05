@@ -22,11 +22,14 @@ class GameState:
         self.selected_grid_room = room
         room.is_selected = True
     
-    def color_note_clicked(self, color):
+    def color_note_clicked(self, note):
         # Implement logic for when a color note is clicked
         # For example, toggle the note's state or remove it from the list
         if self.selected_grid_room:
-            self.selected_grid_room.add_info(color, self.selected_player)
+            if note == self.color_notes.undo_note:
+                self.selected_grid_room.remove_info()
+            else:
+                self.selected_grid_room.add_info(note.color, self.selected_player)
         
     def room_note_clicked(self, room):
         # Implement logic for when a room note is clicked

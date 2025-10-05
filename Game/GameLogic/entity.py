@@ -108,13 +108,14 @@ class Info(pygame.sprite.Sprite):
         self.color = color
         self.image = pygame.image.load(f"Game/Assets/Color.png")
         self.image = pygame.transform.scale(self.image, self.sprite_size)
-        self.update_image()
         self.rect = self.image.get_rect()
+        self.update_image()
 
     def __repr__(self):
         return f"{self.player}:{self.color}"
     
     def update_image(self):
+        self.image = pygame.transform.scale(self.image, self.rect.size)
         self.image.fill(self.color)
 
     def draw(self, surface):
@@ -135,7 +136,11 @@ class Room(Base_Room):
 
     def add_info(self, color, player):
         self.info.append(Info(color=color, player=player))
-    	
+
+    def remove_info(self):
+        if self.info:
+            self.info.pop()
+    
     def draw(self, surface):
         self.update_image()
         surface.blit(self.image, self.rect)
@@ -273,16 +278,20 @@ class Color_Notes():
 
     def __init__(self):
         self.notes = [Info(color=color) for color in self.note_colors]
-        self.special_note = Info(color=GREY, player=None)
+        self.undo_note = Info(color=WHITE, player=None)
         for note in self.all_notes():
             note.image = pygame.transform.scale(note.image, self.sprite_size)
             note.rect = note.image.get_rect()
 
     def all_notes(self):
-        return self.notes + [self.special_note]
+        return self.notes + [self.undo_note]
 
     def draw(self, surface):
-        for i, room in enumerate(self.notes):
-            room.rect.center = (self.starting_center[0], self.starting_center[1] + self.sprite_size[1] * i)
-            room.draw(surface)
+        for i, note in enumerate(self.all_notes()):
+            note.rect.center = (self.starting_center[0], self.starting_center[1] + self.sprite_size[1] * i)
+            note.draw(surface)
+            if note == self.undo_note:
+                image = pygame.image.load(f"Game/Assets/X.png")
+                image = pygame.transform.scale(image, (30, 30))
+                surface.blit(image, (note.rect.centerx - image.get_width()/2, note.rect.centery - image.get_height()/2))
 

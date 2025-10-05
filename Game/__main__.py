@@ -33,10 +33,10 @@ while True:
                 if room.rect.collidepoint(event.pos):
                     print(f"Clicked on note room {room.color}{room.number}")
                     Game.room_note_clicked(room)
-            for note in Game.color_notes.notes:
+            for note in Game.color_notes.all_notes():
                 if note.rect.collidepoint(event.pos):
                     print(f"Clicked on color note {note.color}")
-                    Game.color_note_clicked(note.color)
+                    Game.color_note_clicked(note)
         if event.type == pygame.locals.KEYDOWN:
             if event.key == pygame.locals.K_SPACE:
                 print("Space pressed")
