@@ -19,25 +19,7 @@ while True:
             pygame.quit()
             sys.exit()
         if event.type == pygame.locals.MOUSEBUTTONDOWN:
-            #print(pygame.mouse.get_pos())
-            # check if an arrow was clicked
-            game.before_any_click()
-            for arrow in game.grid.arrows:
-                if arrow.rect.collidepoint(event.pos):
-                    print(f"Clicked on arrow {arrow.direction}, {arrow.number}")
-                    game.grid.shift_rooms(arrow.direction, arrow.number)
-            for room in game.grid.rooms.values():
-                if room.rect.collidepoint(event.pos):
-                    print(f"Clicked on room {room.color}{room.number}")
-                    game.grid_room_clicked(room)
-            for room in game.room_notes.all_rooms():
-                if room.rect.collidepoint(event.pos):
-                    print(f"Clicked on note room {room.color}{room.number}")
-                    game.room_note_clicked(room)
-            for note in game.color_notes.all_notes():
-                if note.rect.collidepoint(event.pos):
-                    print(f"Clicked on color note {note.color}")
-                    game.color_note_clicked(note)
+            game.handle_click(event.pos)
         if event.type == pygame.locals.KEYDOWN:
             if event.key == pygame.locals.K_SPACE:
                 print("Space pressed")

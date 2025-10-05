@@ -34,13 +34,6 @@ class Player:
         self.color = color
         Player.total_amount += 1
         self.index = self.total_amount
-        self.name = self.reset_name()
-
-    def reset_name(self):
-        return f"{self.index}"
-    
-    def set_name(self, new_name):
-        self.name = new_name
 
 class Base_Room(pygame.sprite.Sprite):
     sprite_size = (50, 50)
@@ -130,7 +123,7 @@ class Room(Base_Room):
         # whenever someone looks at the room, add the info based on what they see
         self.info = []
         self.is_selected = False
-        self.was_selected = False
+        self.was_selected = 0
 
     def add_info(self, color, player):
         self.info.append(Info(color=color, player=player))
@@ -161,16 +154,22 @@ class Shift_Arrow(pygame.sprite.Sprite):
         super().__init__()
         self.direction = direction
         self.number = number
+        self.consecutive_clicks = 0
         self.image = pygame.image.load(f"Game/Assets/Shift_Arrow.png")
         self.image = pygame.transform.scale(self.image, self.sprite_size)
         self.image = pygame.transform.rotate(self.image, 90 * direction)
         self.rect = self.image.get_rect()
 
     def draw(self, surface):
-        surface.blit(self.image, self.rect)  
+        surface.blit(self.image, self.rect)
+        if self.consecutive_clicks > 0:
+            text = pygame.font.SysFont('arial', 15).render(f"{self.consecutive_clicks}", True, (0,0,0))
+            surface.blit(text, (self.rect.x + self.rect.width/2 - text.get_width()/2, self.rect.y + self.rect.height/2 - text.get_height()/2))
     
     def __eq__(self, other):
-        return self.direction == other.direction and self.number == other.number
+        if isinstance(other, Shift_Arrow):
+            return self.direction == other.direction and self.number == other.number
+        return False
     
 class Grid:
     size = 5
