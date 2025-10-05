@@ -157,7 +157,7 @@ class Room(Base_Room):
         if self.corner and self.name() == "Unknown":
             pygame.draw.circle(surface, "blue", self.rect.center, 7.5)
         if self.was_selected:
-            pygame.draw.circle(surface, ROOMCOLOR["grey"], self.rect.center, 5.5)
+            pygame.draw.circle(surface, (180, 180, 180), self.rect.center, 5.5) # color = grey
         if self.is_selected:
             pygame.draw.circle(surface, "green", self.rect.center, 5.5)
             
