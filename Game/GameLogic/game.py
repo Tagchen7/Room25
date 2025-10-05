@@ -83,7 +83,7 @@ class GameState:
         if self.selected_grid_room:
             if note == self.color_notes.undo_note:
                 self.selected_grid_room.remove_info()
-            if note == self.color_notes.swap_note:
+            elif note == self.color_notes.swap_note:
                 self.color_notes.swap = not self.color_notes.swap
             else:
                 self.selected_grid_room.add_info(note.color, self.selected_player)
