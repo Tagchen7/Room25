@@ -41,14 +41,6 @@ def get_color_name(color=ROOMCOLOR["grey"]):
     else:
         return "Unknown"
 
-class Player:
-    total_amount = 0
-
-    def __init__(self, color):
-        self.color = color
-        Player.total_amount += 1
-        self.index = self.total_amount
-
 class Base_Room(pygame.sprite.Sprite):
     sprite_size = (50, 50)
     def __init__(self, corner=False, color=ROOMCOLOR["grey"], number=0):
@@ -107,11 +99,11 @@ class Base_Room(pygame.sprite.Sprite):
         self.update_image()
         surface.blit(self.image, self.rect)
 
-class Info(pygame.sprite.Sprite):
-    sprite_size = (50, 20)
-    def __init__(self, color, player=None):
+class Text_Sprite(pygame.sprite.Sprite):
+    sprite_size = (50, 50)
+    def __init__(self, color, text=None):
         super().__init__()
-        self.player = player
+        self.text = text
         self.color = color
         self.image = pygame.image.load(f"Game/Assets/Color.png")
         self.image = pygame.transform.scale(self.image, self.sprite_size)
@@ -125,9 +117,46 @@ class Info(pygame.sprite.Sprite):
     def draw(self, surface):
         self.update_image()
         surface.blit(self.image, self.rect)
-        if self.player is not None:
-            text = pygame.font.SysFont('arial', 15).render(f"{self.player.index}", True, (0,0,0))
+        if self.text:
+            text = pygame.font.SysFont('arial', 15).render(f"{self.text}", True, (0,0,0))
             surface.blit(text, (self.rect.x + self.rect.width/2 - text.get_width()/2, self.rect.y + self.rect.height/2 - text.get_height()/2))
+
+class Player(Text_Sprite):
+    total_amount = 0
+
+    def __init__(self, color):
+        super().__init__(color=color)
+        self.color = color
+        Player.total_amount += 1
+        self.number = self.total_amount
+        self.text = self.number
+        self.is_selected = False
+
+    def draw(self, surface):
+        super().draw(surface)
+        if self.is_selected:
+            image = pygame.image.load(f"Game/Assets/O.png")
+            image = pygame.transform.scale(image, (40, 40))
+            surface.blit(image, (self.rect.centerx - image.get_width()/2, self.rect.centery - image.get_height()/2))
+
+class Info(Text_Sprite):
+    sprite_size = (50, 20)
+    def __init__(self, color, player=None):
+        super().__init__(color=color)
+        self.player = player
+        self.color = color
+    
+    @property
+    def player(self):
+        return self._player
+    
+    @player.setter
+    def player(self, player):
+        self._player = player
+        if player:
+            self.text = player.number
+        else:
+            self.text = None
 
 class Room(Base_Room):
     sprite_size = (50, 50)
@@ -336,8 +365,15 @@ class Color_Notes():
 
 class Player_Notes():
     sprite_size = (50, 50)
+    starting_center = (500, 0)
+
     def __init__(self) -> None:
         self.players = []
 
     def add_player(self, player:Player):
         self.players.append(player)
+
+    def draw(self, surface):
+        for player in self.players:
+            player.rect.center = (self.starting_center[0], self.starting_center[1] + self.sprite_size[1] * player.number)
+            player.draw(surface)

@@ -7,6 +7,10 @@ class GameState:
         self.grid = entity.Grid()
         self.room_notes = entity.Room_Notes()
         self.color_notes = entity.Color_Notes()
+        self.player_notes = entity.Player_Notes()
+        #TODO: add player selection
+        for color in entity.PLAYERCOLOR.values():
+            self.player_notes.add_player(entity.Player(color=color))
         self.selected_player = entity.Player(color=entity.PLAYERCOLOR["brown"])
         self.selected_grid_room = None
         self.old_grid_room = None
@@ -16,6 +20,7 @@ class GameState:
         self.grid.draw(surface)
         self.room_notes.draw(surface)
         self.color_notes.draw(surface)
+        self.player_notes.draw(surface)
 
     def handle_click(self, pos):
             #print(pygame.mouse.get_pos())
@@ -40,7 +45,12 @@ class GameState:
                     print(f"Clicked on color note {note.color}")
                     self.color_note_clicked(note)
                     return
-
+            for player in self.player_notes.players:
+                if player.rect.collidepoint(pos):
+                    print(f"Clicked on player note {player.color}{player.number}")
+                    self.player_note_clicked(player)
+                    return
+                
     def deselect_old_grid(self):
         if self.old_grid_room:
             self.old_grid_room.was_selected = False
@@ -88,6 +98,11 @@ class GameState:
             else:
                 self.selected_grid_room.add_info(note.color, self.selected_player)
 
+    def player_note_clicked(self, player):
+        if self.selected_player:
+            self.selected_player.is_selected = False
+        self.selected_player = player
+        player.is_selected = True
         
     def room_note_clicked(self, room):
         # Implement logic for when a room note is clicked
