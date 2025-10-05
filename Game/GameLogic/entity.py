@@ -129,6 +129,7 @@ class Player(Text_Sprite):
         self.is_selected = False
 
     def draw(self, surface):
+        self.text = self.number
         super().draw(surface)
         if self.is_selected:
             image = pygame.image.load(f"Game/Assets/O.png")
@@ -367,11 +368,15 @@ class Player_Notes():
     def __init__(self) -> None:
         self.players = []
         self.possible_players = [Player(color=color, number=0) for color in PLAYERCOLOR.values()]
+        self.players = [Player(color=color, number=i+1) for i, color in enumerate(PLAYERCOLOR.values())]
 
     def draw_selection(self, surface):
         for i, player in enumerate(self.possible_players):
             player.rect.center = (self.selection_center[0]+ self.sprite_size[0] * i, self.selection_center[1])
             player.draw(surface)
+    
+    def update_playernumbers(self):
+        pass
 
     def finalise_players(self):
         for player in self.players.copy():
