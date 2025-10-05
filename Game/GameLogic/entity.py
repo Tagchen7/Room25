@@ -126,6 +126,7 @@ class Info(pygame.sprite.Sprite):
 
 class Room(Base_Room):
     sprite_size = (50, 50)
+    show_info = False
     def __init__(self, corner=False, color=GREY, number=0):
         super().__init__(corner=corner, color=color, number=number)
         # whenever someone looks at the room, add the info based on what they see
@@ -138,7 +139,7 @@ class Room(Base_Room):
     def draw(self, surface):
         self.update_image()
         surface.blit(self.image, self.rect)
-        if self.number == 0:
+        if self.number == 0 or self.show_info:
             for i, info in enumerate(self.info):
                 info.rect.width = self.sprite_size[1] / len(self.info)
                 info.rect.bottomleft = (self.rect.bottomleft[0] + i * info.rect.width, self.rect.bottomleft[1])
@@ -232,6 +233,9 @@ class Grid:
             elif arrow.direction == 3:  # up
                 arrow.rect.center = ((arrow.number+1.5)*self.room_size[0], 0.5*self.room_size[1])
             arrow.draw(surface)
+    
+    def toggle_show_info(self):
+        Room.show_info = not Room.show_info
 
 class Room_Notes():
     sprite_size = (50, 50)

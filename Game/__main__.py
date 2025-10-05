@@ -37,6 +37,10 @@ while True:
                 if note.rect.collidepoint(event.pos):
                     print(f"Clicked on color note {note.color}")
                     Game.color_note_clicked(note.color)
+        if event.type == pygame.locals.KEYDOWN:
+            if event.key == pygame.locals.K_SPACE:
+                print("Space pressed")
+                Game.space_pressed()
                     
     DISPLAYSURF.fill("white")
     Game.draw(DISPLAYSURF)

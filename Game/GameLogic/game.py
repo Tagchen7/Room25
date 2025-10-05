@@ -33,3 +33,7 @@ class GameState:
         if self.selected_grid_room:
             self.selected_grid_room.color = room.color
             self.selected_grid_room.number = room.number
+
+    def space_pressed(self):
+        # Implement logic for when the space bar is pressed
+        self.grid.toggle_show_info()
