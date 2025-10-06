@@ -24,6 +24,10 @@ while True:
             if event.key == pygame.locals.K_SPACE:
                 print("Space pressed")
                 game.space_pressed()
+            if event.key == pygame.locals.K_DOWN:
+                pass
+            if event.key == pygame.locals.K_0:
+                game.number_pressed(0)
                     
     DISPLAYSURF.fill("white")
     game.draw(DISPLAYSURF)

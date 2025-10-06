@@ -148,5 +148,13 @@ class GameState:
             self.selected_grid_room.number = room.number
 
     def space_pressed(self):
-        # Implement logic for when the space bar is pressed
+        # Space bar toggles show info
         self.grid.toggle_show_info()
+    
+    def number_pressed(self, num):
+        # maybe implemented later ...
+        return
+        # number selects a player_note
+        if self.state == "start":
+            if num in range(1, 9):
+                pass
