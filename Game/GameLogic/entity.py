@@ -502,6 +502,9 @@ class Player_Notes():
         if len(self.players) < self.min_players:
             self.players = self.all_players(ordered=True)
         self.players = sorted(self.players, key=lambda player: player.number)
+        # reassign numbers so that there arent any missing players
+        for i, player in enumerate(self.players):
+            player.number = i+1
         self.update_rect_pos()
 
     def update_rect_pos(self):
