@@ -257,6 +257,7 @@ class Room(Base_Room):
         super().draw(surface)
         if self.number == 0 or self.show_info:
             for info in self.info:
+                self.update_info()
                 info.draw(surface)
         if self.corner and self.name() == "Unknown":
             pygame.draw.circle(surface, "blue", self.rect.center, 7.5)
