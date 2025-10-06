@@ -367,14 +367,18 @@ class Grid:
             arrow.draw(surface)
     
     def toggle_show_info(self):
-        if not Room.show_info:
-            Room.show_info = True
+        # 0I -> RI -> R0 -> 00
+        if Room.show_info and Info.show_player:
             Info.show_player = False
-        elif not Info.show_player:
-            Info.show_player = True
-        else:
+            return
+        if Room.show_info and not Info.show_player:
             Room.show_info = False
-            Info.show_player = False
+            return
+        if not Room.show_info and not Info.show_player:
+            Info.show_player = True
+            return
+        else:
+            Room.show_info = True
 
 class Room_Notes():
     starting_center = (50, 400)
