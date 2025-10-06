@@ -135,6 +135,7 @@ class GameState:
 
     def player_confirm_note_clicked(self):
         self.player_notes.finalise_players()
+        self.player_note_clicked(self.player_notes.players[0])
         self.state = "play"
         
     def room_note_clicked(self, room):
