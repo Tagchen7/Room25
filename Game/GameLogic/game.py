@@ -137,6 +137,7 @@ class GameState:
         self.player_notes.finalise_players()
         self.player_note_clicked(self.player_notes.players[0])
         self.state = "play"
+        self.grid_room_clicked(self.grid.rooms[(2,2)])
         
     def room_note_clicked(self, room):
         # Implement logic for when a room note is clicked
