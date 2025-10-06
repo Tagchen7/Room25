@@ -150,11 +150,3 @@ class GameState:
     def space_pressed(self):
         # Space bar toggles show info
         self.grid.toggle_show_info()
-    
-    def number_pressed(self, num):
-        # maybe implemented later ...
-        return
-        # number selects a player_note
-        if self.state == "start":
-            if num in range(1, 9):
-                pass
