@@ -4,6 +4,7 @@ from Game.GameLogic import entity
 class GameState:
     def __init__(self):
         self.players = []
+        self.is_drawn = {}
         self.grid = entity.Grid()
         self.room_notes = entity.Room_Notes()
         self.color_notes = entity.Color_Notes()
@@ -13,12 +14,14 @@ class GameState:
         self.selected_grid_room = None
         self.old_grid_room = None
         self.old_arrow = None
-        self.state = "play"
+        self.state = "start"
 
     def initial_draw(self, surface):
-        self.player_notes.draw_selection(surface)
+        self.player_notes.draw(surface)
+        self.is_drawn["player_notes"] = True
     
     def draw(self, surface):
+        self.is_drawn = {}
         if self.state == "start":
             self.initial_draw(surface)
         else:
@@ -26,43 +29,53 @@ class GameState:
 
     def play_draw(self, surface):
         self.grid.draw(surface)
+        self.is_drawn["grid"] = True
         self.room_notes.draw(surface)
+        self.is_drawn["room_notes"] = True
         self.color_notes.draw(surface)
+        self.is_drawn["color_notes"] = True
         self.player_notes.draw(surface)
+        self.is_drawn["player_notes"] = True
 
     def handle_click(self, pos):
         #print(pygame.mouse.get_pos())
         # check if an arrow was clicked
-        for arrow in self.grid.arrows:
-            if arrow.rect.collidepoint(pos):
-                print(f"Clicked on arrow {arrow.direction}, {arrow.number}")
-                self.arrow_clicked(arrow)
-                return
-        for room in self.grid.rooms.values():
-            if room.rect.collidepoint(pos):
-                print(f"Clicked on room {room.color}{room.number}")
-                self.grid_room_clicked(room)
-                return
-        for room in self.room_notes.all_rooms():
-            if room.rect.collidepoint(pos):
-                print(f"Clicked on note room {room.color}{room.number}")
-                self.room_note_clicked(room)
-                return
-        for note in self.color_notes.all_notes():
-            if note.rect.collidepoint(pos):
-                print(f"Clicked on color note {note.color}")
-                self.color_note_clicked(note)
-                return
-        for player in self.player_notes.players:
-            if player.rect.collidepoint(pos):
-                print(f"Clicked on player note {player.color}{player.number}")
-                self.player_note_clicked(player)
-                return
-        for player in self.player_notes.possible_players:
-            if player.rect.collidepoint(pos):
-                print(f"Clicked on player_selection note {player.color}{player.number}")
-                self.player_selection_note_clicked(player)
-                return
+        if self.is_drawn.get("grid", False) == True:
+            for arrow in self.grid.arrows:
+                if arrow.rect.collidepoint(pos):
+                    print(f"Clicked on arrow {arrow.direction}, {arrow.number}")
+                    self.arrow_clicked(arrow)
+                    return
+            for room in self.grid.rooms.values():
+                if room.rect.collidepoint(pos):
+                    print(f"Clicked on room {room.color}{room.number}")
+                    self.grid_room_clicked(room)
+                    return
+        if self.is_drawn.get("room_notes", False) == True:
+            for room in self.room_notes.all_rooms():
+                if room.rect.collidepoint(pos):
+                    print(f"Clicked on note room {room.color}{room.number}")
+                    self.room_note_clicked(room)
+                    return
+        if self.is_drawn.get("color_notes", False) == True:
+            for note in self.color_notes.all_notes():
+                if note.rect.collidepoint(pos):
+                    print(f"Clicked on color note {note.color}")
+                    self.color_note_clicked(note)
+                    return
+        if self.is_drawn.get("player_notes", False) == True:
+            for player in self.player_notes.players:
+                if player.rect.collidepoint(pos):
+                    print(f"Clicked on player note {player.color}{player.number}")
+                    self.player_note_clicked(player)
+                    if self.state == "start":
+                        self.player_selection_note_clicked(player)
+                    return
+            if not self.player_notes.confirmed_players:
+                if self.player_notes.confirm_note.rect.collidepoint(pos):
+                    print(f"Clicked on confirm note")
+                    self.player_confirm_note_clicked()
+
                 
     def deselect_old_grid(self):
         if self.old_grid_room:
@@ -118,8 +131,11 @@ class GameState:
         player.is_selected = True
     
     def player_selection_note_clicked(self, player):
-        if self.selected_player:
-            player.number += self.selected_player.number
+        self.player_notes.assign_number(player)
+
+    def player_confirm_note_clicked(self):
+        self.player_notes.finalise_players()
+        self.state = "play"
         
     def room_note_clicked(self, room):
         # Implement logic for when a room note is clicked

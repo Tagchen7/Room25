@@ -425,38 +425,58 @@ class Color_Notes():
 class Player_Notes():
     starting_center = (500, 0)
     selection_center = (100, 200)
+    min_players = 4
 
     def __init__(self, sprite_size=(50, 50), selected_sprite_size=(40, 40)) -> None:
         self.sprite_size = sprite_size
         self.selected_sprite_size = selected_sprite_size
-        self.players = []
-        self.possible_players = self.all_players(ordered=False)
-        self.players = self.all_players(ordered=True)
+        self.players = self.all_players(ordered=False)
+        self.confirm_note = Info(color=ROOMCOLOR["white"], sprite_size=sprite_size, player=None)
+        self.confirmed_players = False
+        self.confirm_image = pygame.image.load(f"Game/Assets/O.png")
+        self.confirm_image = pygame.transform.scale(self.confirm_image, selected_sprite_size)
         self.update_rect_pos()
 
     def all_players(self, ordered = False):
         step = 1 if ordered else 0
         return [Player(color=color, number=(i+1)*step, sprite_size=self.sprite_size, selected_sprite_size=self.selected_sprite_size) for i, color in enumerate(PLAYERCOLOR.values())]
-
-    def draw_selection(self, surface):
-        for i, player in enumerate(self.possible_players):
-            player.rect.center = (self.selection_center[0]+ self.sprite_size[0] * i, self.selection_center[1])
-            player.draw(surface)
     
-    def update_playernumbers(self):
-        pass
+    def assign_number(self, player):
+        if player.number > 0:
+            player.number = 0
+        else:
+            player.number = self.get_lowest_missing_number()
+    
+    def get_lowest_missing_number(self):
+        possible_numbers = [i+1 for i in range(len(self.all_players()))]
+        for player in self.players:
+            if player.number in possible_numbers:
+                possible_numbers.remove(player.number)
+        if possible_numbers:
+            return min(possible_numbers)
+        return 0
 
     def finalise_players(self):
+        self.confirmed_players = True
         for player in self.players.copy():
             if player.number == 0:
                 self.players.remove(player)
+        if len(self.players) < self.min_players:
+            self.players = self.all_players(ordered=True)
         self.players = sorted(self.players, key=lambda player: player.number)
         self.update_rect_pos()
 
     def update_rect_pos(self):
-        for player in self.players:
-            player.rect.center = (self.starting_center[0], self.starting_center[1] + self.sprite_size[1] * player.number)
+        if not self.confirmed_players:
+            for i, player in enumerate(self.players + [self.confirm_note]):
+                player.rect.center = (self.selection_center[0]+ self.sprite_size[0] * i, self.selection_center[1])
+        else:
+            for player in self.players:
+                player.rect.center = (self.starting_center[0], self.starting_center[1] + self.sprite_size[1] * player.number)
 
     def draw(self, surface):
         for player in self.players:
             player.draw(surface)
+        if not self.confirmed_players:
+            self.confirm_note.draw(surface=surface)
+            surface.blit(self.confirm_image, (self.confirm_note.rect.centerx - self.confirm_image.get_width()/2, self.confirm_note.rect.centery - self.confirm_image.get_height()/2))
