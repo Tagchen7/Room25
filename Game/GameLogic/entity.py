@@ -246,7 +246,9 @@ class Room(Base_Room):
             self.update_info()
 
     def update_info(self):
-        new_sprite_width = self.rect.width / len(self.info)
+        new_sprite_width = 0
+        if self.info:
+            new_sprite_width = self.rect.width / len(self.info)
         for i, info in enumerate(self.info):
             info.change_image(height=self.info_height, width=new_sprite_width)
             info.rect.bottomleft = (self.rect.bottomleft[0] + i * info.rect.width, self.rect.bottomleft[1])
