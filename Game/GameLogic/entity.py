@@ -182,11 +182,14 @@ class Player(Text_Sprite):
             surface.blit(self.is_selected_image, (self.rect.centerx - self.is_selected_image.get_width()/2, self.rect.centery - self.is_selected_image.get_height()/2))
 
 class Info(Text_Sprite):
+    show_player = True
     def __init__(self, sprite_size, color, player=None):
         super().__init__(sprite_size=sprite_size, color=color)
+        self.player_info_sprite = Text_Sprite(sprite_size=(sprite_size[0], sprite_size[1] / 2), color=PLAYERCOLOR["grey"], text=None)
         self.player = player
         self.color = color
-    
+        self.change_image(size=sprite_size)
+
     @property
     def player(self):
         return self._player
@@ -195,6 +198,7 @@ class Info(Text_Sprite):
     def player(self, player):
         self._player = player
         if player:
+            self.player_info_sprite.color = player.color
             if player.number > 0:
                 self.text = player.number
             else:
@@ -202,8 +206,28 @@ class Info(Text_Sprite):
         else:
             self.text = None
 
+    def change_image(self, width=None, height=None, size=None, color=None, text=None):
+        super().change_image(width=width, height=height, size=size, color=color, text=text)
+        heightmod = 3
+        newheight = height / heightmod if height else height
+        newwidth = width
+        if size:
+            newwidth = size[0]
+            newheight = size[1] / heightmod
+        self.player_info_sprite.change_image(width=newwidth, height=newheight)
+    
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
+        if self.show_player and self.player:
+            self.player_info_sprite.rect.bottomleft = self.rect.topleft
+            self.player_info_sprite.draw(surface=surface)
+        if self.text:
+            surface.blit(self.rendered_text, (self.rect.x + self.rect.width/2 - self.rendered_text.get_width()/2, self.rect.y + self.rect.height/2 - self.rendered_text.get_height()/2))
+
+
 class Room(Base_Room):
-    show_info = False
+    show_info = True
+
     def __init__(self, sprite_size=(50, 50), info_height=20, corner=False, color=ROOMCOLOR["grey"], number=0):
         super().__init__(sprite_size=sprite_size, corner=corner, color=color, number=number)
         # whenever someone looks at the room, add the info based on what they see
@@ -237,8 +261,7 @@ class Room(Base_Room):
         if self.was_selected:
             pygame.draw.circle(surface, (180, 180, 180), self.rect.center, 5.5) # color = grey
         if self.is_selected:
-            pygame.draw.circle(surface, "green", self.rect.center, 5.5)
-            
+            pygame.draw.circle(surface, "green", self.rect.center, 5.5)          
 
 class Shift_Arrow(pygame.sprite.Sprite):
     def __init__(self, direction, number, sprite_size=(50, 50)):
@@ -344,7 +367,14 @@ class Grid:
             arrow.draw(surface)
     
     def toggle_show_info(self):
-        Room.show_info = not Room.show_info
+        if not Room.show_info:
+            Room.show_info = True
+            Info.show_player = False
+        elif not Info.show_player:
+            Info.show_player = True
+        else:
+            Room.show_info = False
+            Info.show_player = False
 
 class Room_Notes():
     starting_center = (50, 400)
