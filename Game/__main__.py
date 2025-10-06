@@ -5,7 +5,7 @@ from Game.GameLogic.game import GameState
 
 pygame.init()
 
-SCREEN_WIDTH = 900
+SCREEN_WIDTH = 700
 SCREEN_HEIGHT = 600
 
 DISPLAYSURF = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
