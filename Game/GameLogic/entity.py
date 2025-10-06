@@ -379,6 +379,7 @@ class Grid:
             return
         else:
             Room.show_info = True
+            return
 
 class Room_Notes():
     starting_center = (50, 400)
