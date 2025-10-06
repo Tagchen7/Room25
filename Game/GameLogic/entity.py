@@ -428,10 +428,15 @@ class Player_Notes():
 
     def __init__(self, sprite_size=(50, 50), selected_sprite_size=(40, 40)) -> None:
         self.sprite_size = sprite_size
+        self.selected_sprite_size = selected_sprite_size
         self.players = []
-        self.possible_players = [Player(color=color, number=0, sprite_size=sprite_size, selected_sprite_size=selected_sprite_size) for color in PLAYERCOLOR.values()]
-        self.players = [Player(color=color, number=i+1, sprite_size=sprite_size, selected_sprite_size=selected_sprite_size) for i, color in enumerate(PLAYERCOLOR.values())]
+        self.possible_players = self.all_players(ordered=False)
+        self.players = self.all_players(ordered=True)
         self.update_rect_pos()
+
+    def all_players(self, ordered = False):
+        step = 1 if ordered else 0
+        return [Player(color=color, number=(i+1)*step, sprite_size=self.sprite_size, selected_sprite_size=self.selected_sprite_size) for i, color in enumerate(PLAYERCOLOR.values())]
 
     def draw_selection(self, surface):
         for i, player in enumerate(self.possible_players):
