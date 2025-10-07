@@ -10,6 +10,19 @@ Room25 needs at least 4 playable characters, which is why all potential players 
 
 ## Main Gamescreen
 
-![Player Selection](Tutorial_Pictures/Main_Gamescreen.png)
+![Main Gamescreen](Tutorial_Pictures/Main_Gamescreen.png)
 
-### temp
+### Rooms
+![Rooms](Tutorial_Pictures/Rooms.png)
+
+Each square found in the grid represents a room. you can select a room by clicking on it. The green dot represents the currently selected room. The blue dots represents rooms that started out in the corner, and as such are more interesting to look at compared to other rooms.
+
+### Reveal Room
+
+![Potential Rooms](Tutorial_Pictures/Rooms_Notes.png)
+
+All potential rooms are found at the bottom of the Main Gamescreen. By clicking on a potential room, the picture of the selected room in the main grid will change to match the potential selected room.
+
+The picture in the top-right corner of the potential rooms represents an unknown room. Any room with a picture different than the unkown picture counts as revealed.
+
+### next?
