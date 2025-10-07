@@ -2,6 +2,20 @@
 from sre_parse import WHITESPACE
 from turtle import circle
 import pygame
+import sys
+import os
+
+# Determine base path for assets so the code works when run as a script and
+# when packaged into an exe by py2exe or similar tools. When frozen, py2exe
+# sets sys.frozen and may provide a base extraction path (sys._MEIPASS) —
+# handle common cases and fall back to the repository layout.
+if getattr(sys, 'frozen', False):
+    # When frozen by py2exe/pyinstaller, try to use _MEIPASS if available
+    ASSETS_BASE = os.path.join(getattr(sys, '_MEIPASS', ''), 'Game', 'Assets')
+else:
+    # Running from source inside the repository
+    HERE = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    ASSETS_BASE = os.path.join(HERE, 'Game', 'Assets')
 
 # Define some colors for rooms
 ROOMCOLOR = {
@@ -70,10 +84,13 @@ class Base_Room(pygame.sprite.Sprite):
         self.update_image()
 
     def update_image(self):
+        # Use ASSETS_BASE for reliable asset loading both from source and from
+        # a frozen executable. Use os.path.join to build platform-correct paths.
         if self.name() == "Unknown":
-            self.image = pygame.image.load("Game/Assets/Unknown.png")
+            img_path = os.path.join(ASSETS_BASE, "Unknown.png")
         else:
-            self.image = pygame.image.load(f"Game/Assets/{get_color_name(self.color)}_{self.number}.png")
+            img_path = os.path.join(ASSETS_BASE, f"{get_color_name(self.color)}_{self.number}.png")
+        self.image = pygame.image.load(img_path)
         self.image = pygame.transform.scale(self.image, self.rect.size)
 
     def __repr__(self) -> str:
@@ -119,7 +136,7 @@ class Text_Sprite(pygame.sprite.Sprite):
 
     def __init__(self, sprite_size, color, text=None):
         super().__init__()
-        self.image = pygame.image.load(f"Game/Assets/Color.png")
+        self.image = pygame.image.load(os.path.join(ASSETS_BASE, "Color.png"))
         self.image = pygame.transform.scale(self.image, sprite_size)
         self.rect = self.image.get_rect()
         self.text = text
@@ -172,7 +189,7 @@ class Player(Text_Sprite):
         self.color = color
         self.number = number
         self.is_selected = False
-        self.is_selected_image = pygame.image.load(f"Game/Assets/O.png")
+        self.is_selected_image = pygame.image.load(os.path.join(ASSETS_BASE, "O.png"))
         self.is_selected_image = pygame.transform.scale(self.is_selected_image, selected_sprite_size)
 
     def draw(self, surface):
@@ -272,7 +289,7 @@ class Shift_Arrow(pygame.sprite.Sprite):
         self.direction = direction
         self.number = number
         self.consecutive_clicks = 0
-        self.image = pygame.image.load(f"Game/Assets/Shift_Arrow.png")
+        self.image = pygame.image.load(os.path.join(ASSETS_BASE, "Shift_Arrow.png"))
         self.image = pygame.transform.scale(self.image, sprite_size)
         self.image = pygame.transform.rotate(self.image, 90 * direction)
         self.rect = self.image.get_rect()
@@ -425,9 +442,9 @@ class Color_Notes():
         self.undo_note = Info(color=ROOMCOLOR["white"], sprite_size=sprite_size, player=None)
         self.swap_note = Info(color=ROOMCOLOR["white"], sprite_size=sprite_size, player=None)
         self.swap = False
-        self.undo_image = pygame.image.load(f"Game/Assets/X.png")
+        self.undo_image = pygame.image.load(os.path.join(ASSETS_BASE, "X.png"))
         self.undo_image = pygame.transform.scale(self.undo_image, symbol_sprite_size)
-        self.swap_image = pygame.image.load(f"Game/Assets/Swap.png")
+        self.swap_image = pygame.image.load(os.path.join(ASSETS_BASE, "Swap.png"))
         self.swap_image = pygame.transform.scale(self.swap_image, symbol_sprite_size)
         self.init_rect_pos()
     
@@ -471,7 +488,7 @@ class Player_Notes():
         self.players = self.all_players(ordered=False)
         self.confirm_note = Info(color=ROOMCOLOR["white"], sprite_size=sprite_size, player=None)
         self.confirmed_players = False
-        self.confirm_image = pygame.image.load(f"Game/Assets/O.png")
+        self.confirm_image = pygame.image.load(os.path.join(ASSETS_BASE, "O.png"))
         self.confirm_image = pygame.transform.scale(self.confirm_image, selected_sprite_size)
         self.update_rect_pos()
 

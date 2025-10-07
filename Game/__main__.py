@@ -1,7 +1,23 @@
 import sys
+import os
 import pygame
 import pygame.locals
 from Game.GameLogic.game import GameState
+
+# If the app is frozen by PyInstaller (or similar tools), resources are
+# extracted to a temporary directory available as sys._MEIPASS. Change
+# the current working directory there so relative paths and any code that
+# depends on CWD continue to work. This is safe when running normally as
+# well because getattr will return False.
+if getattr(sys, 'frozen', False):
+    base = getattr(sys, '_MEIPASS', None)
+    if base:
+        try:
+            os.chdir(base)
+        except Exception:
+            # If chdir fails, continue - asset loading uses ASSETS_BASE which
+            # is computed from _MEIPASS in the code.
+            pass
 
 pygame.init()
 
