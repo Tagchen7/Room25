@@ -516,9 +516,13 @@ class Player_Notes():
         for player in self.players.copy():
             if player.number == 0:
                 self.players.remove(player)
-        if len(self.players) < self.min_players:
-            self.players = self.all_players(ordered=True)
+        # sort players in order
         self.players = sorted(self.players, key=lambda player: player.number)
+        # get all players if not enough players for a game are selected
+        if len(self.players) < self.min_players:
+            for player in self.all_players(ordered=True):
+                if player.color not in [p.color for p in self.players]:
+                    self.players.append(player)
         # reassign numbers so that there arent any missing players
         for i, player in enumerate(self.players):
             player.number = i+1
