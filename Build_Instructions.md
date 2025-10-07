@@ -15,3 +15,7 @@ In the root directory, run
 
 - pip install -e . (note the dot, it stands for "current directory")
   - pip install hatchling(chosen build system) if build-system is missing
+
+### make exe
+ Run:
+ - & .\venv\Scripts\pyinstaller.exe Room25.spec
