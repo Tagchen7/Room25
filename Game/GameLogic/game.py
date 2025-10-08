@@ -4,7 +4,8 @@ from Game.GameLogic import entity
 class GameState:
     def __init__(self):
         self.players = []
-        self.is_drawn = {}
+        self.draw_callback = {}
+        self.click_callback = {}
         self.grid = entity.Grid()
         self.room_notes = entity.Room_Notes()
         self.color_notes = entity.Color_Notes()
@@ -14,67 +15,85 @@ class GameState:
         self.selected_grid_room = None
         self.old_grid_room = None
         self.old_arrow = None
+        # possible states: start, play, name
         self.state = "start"
+        
+    @property
+    def state(self):
+        return self._state
+    
+    @state.setter
+    def state(self, state):
+        self._state = state
+        # reset board
+        self.draw_callback = {}
+        self.click_callback = {}
+        # add board drawables and clickables
+        if self.state == "play":
+            self.play_state()
+            return
+        if self.state == "start":
+            self.start_state()
+            return
+        
 
-    def initial_draw(self, surface):
-        self.player_notes.draw(surface)
-        self.is_drawn["player_notes"] = True
+    def start_state(self):
+        self.draw_callback["player_notes"] = self.player_notes.draw
+        self.click_callback["player_notes"] = self.player_selection_note_clicked
+        self.click_callback["confirm_note"] = self.player_confirm_note_clicked
+    
+    def play_state(self):
+        self.draw_callback["grid"] = self.grid.draw
+        self.click_callback["grid_room"] = self.grid_room_clicked
+        self.click_callback["grid_arrow"] = self.arrow_clicked
+        self.draw_callback["room_notes"] = self.room_notes.draw
+        self.click_callback["room_notes"] = self.room_note_clicked
+        self.draw_callback["color_notes"] = self.color_notes.draw
+        self.click_callback["color_notes"] = self.color_note_clicked
+        self.draw_callback["player_notes"] = self.player_notes.draw
+        self.click_callback["player_notes"] = self.player_note_clicked
     
     def draw(self, surface):
-        self.is_drawn = {}
-        if self.state == "start":
-            self.initial_draw(surface)
-        else:
-            self.play_draw(surface)
-
-    def play_draw(self, surface):
-        self.grid.draw(surface)
-        self.is_drawn["grid"] = True
-        self.room_notes.draw(surface)
-        self.is_drawn["room_notes"] = True
-        self.color_notes.draw(surface)
-        self.is_drawn["color_notes"] = True
-        self.player_notes.draw(surface)
-        self.is_drawn["player_notes"] = True
+        for drawfunc in self.draw_callback.values():
+            drawfunc(surface)
 
     def handle_click(self, pos):
         #print(pygame.mouse.get_pos())
         # check if an arrow was clicked
-        if self.is_drawn.get("grid", False) == True:
+        if self.click_callback.get("grid_arrow", None):
             for arrow in self.grid.arrows:
                 if arrow.rect.collidepoint(pos):
                     print(f"Clicked on arrow {arrow.direction}, {arrow.number}")
-                    self.arrow_clicked(arrow)
+                    self.click_callback["grid_arrow"](arrow)
                     return
+        if self.click_callback.get("grid_room", None):
             for room in self.grid.rooms.values():
                 if room.rect.collidepoint(pos):
                     print(f"Clicked on room {room.color}{room.number}")
-                    self.grid_room_clicked(room)
+                    self.click_callback["grid_room"](room)
                     return
-        if self.is_drawn.get("room_notes", False) == True:
+        if self.click_callback.get("room_notes", None):
             for room in self.room_notes.all_rooms():
                 if room.rect.collidepoint(pos):
                     print(f"Clicked on note room {room.color}{room.number}")
-                    self.room_note_clicked(room)
+                    self.click_callback["room_notes"](room)
                     return
-        if self.is_drawn.get("color_notes", False) == True:
+        if self.click_callback.get("color_notes", None):
             for note in self.color_notes.all_notes():
                 if note.rect.collidepoint(pos):
                     print(f"Clicked on color note {note.color}")
-                    self.color_note_clicked(note)
+                    self.click_callback["color_notes"](note)
                     return
-        if self.is_drawn.get("player_notes", False) == True:
+        if self.click_callback.get("player_notes", None):
             for player in self.player_notes.players:
                 if player.rect.collidepoint(pos):
                     print(f"Clicked on player note {player.color}{player.number}")
-                    self.player_note_clicked(player)
-                    if self.state == "start":
-                        self.player_selection_note_clicked(player)
+                    self.click_callback["player_notes"](player)
                     return
-            if not self.player_notes.confirmed_players:
+        if self.click_callback.get("confirm_note", None):
                 if self.player_notes.confirm_note.rect.collidepoint(pos):
                     print(f"Clicked on confirm note")
-                    self.player_confirm_note_clicked()
+                    self.click_callback["confirm_note"]()
 
                 
     def deselect_old_grid(self):
