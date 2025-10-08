@@ -34,6 +34,7 @@ Each square found in the grid represents a room. you can select a room by clicki
 ![Shift Arrows](Tutorial_Pictures/Shift.png)
 
 Each arrow represents a potential shift direction. Click on an arrow to shift all rooms in the same row or column as the arrow in the direction of the arrow. 
+TODO!!!
 
 
 ### Reveal Room
@@ -46,3 +47,4 @@ The picture in the top-right corner of the potential rooms represents an unknown
 
 ### Make Notes
 
+TODO!!

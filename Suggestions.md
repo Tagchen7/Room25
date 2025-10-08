@@ -1,0 +1,9 @@
+- Name a player
+- Fullscreen
+- Title to playerselection
+- keyboardshortcuts?
+- playerselection circle -> checkmark
+- playerselection remove last selected player indication
+- change colornote-size? make smaller?
+  - maybe with minsize + scale? same as fullscreen?
+- Restart
