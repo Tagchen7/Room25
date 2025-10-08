@@ -123,9 +123,10 @@ class Base_Room(pygame.sprite.Sprite):
                  (ROOMCOLOR["yellow"], 3): "Cold",
                  (ROOMCOLOR["yellow"], 4): "Dark",
                  (ROOMCOLOR["yellow"], 5): "Pivot",
-                 (ROOMCOLOR["yellow"], 6): "Jamming",
-                 (ROOMCOLOR["yellow"], 7): "M.A.C.",
-                 (ROOMCOLOR["yellow"], 8): "Mirror"
+                 (ROOMCOLOR["yellow"], 6): "Fake Exit",
+                 (ROOMCOLOR["yellow"], 7): "Jamming",
+                 (ROOMCOLOR["yellow"], 8): "M.A.C.",
+                 (ROOMCOLOR["yellow"], 9): "Mirror"
                  }
         return names.get((self.color, self.number), "Unknown")
     	
@@ -408,7 +409,7 @@ class Room_Notes():
         self.sprite_size = sprite_size
         self.blue_rooms = [Base_Room(color=ROOMCOLOR["blue"], number=i, sprite_size=sprite_size) for i in range(1, 4)]
         self.green_rooms = [Base_Room(color=ROOMCOLOR["green"], number=i, sprite_size=sprite_size) for i in range(1, 8)]
-        self.yellow_rooms = [Base_Room(color=ROOMCOLOR["yellow"], number=i, sprite_size=sprite_size) for i in range(1, 9)]
+        self.yellow_rooms = [Base_Room(color=ROOMCOLOR["yellow"], number=i, sprite_size=sprite_size) for i in range(1, 10)]
         self.red_rooms = [Base_Room(color=ROOMCOLOR["red"], number=i, sprite_size=sprite_size) for i in range(1, 9)]
         self.undo_room = Base_Room(color=ROOMCOLOR["grey"], number=0, sprite_size=sprite_size)
         for room in self.all_rooms():

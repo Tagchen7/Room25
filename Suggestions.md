@@ -7,3 +7,5 @@
 - change colornote-size? make smaller?
   - maybe with minsize + scale? same as fullscreen?
 - Restart
+
+- Fix yellow!! Fake exit is missing!!! (before Jamming)
