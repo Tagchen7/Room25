@@ -37,9 +37,17 @@ while True:
         if event.type == pygame.locals.MOUSEBUTTONDOWN:
             game.handle_click(event.pos)
         if event.type == pygame.locals.KEYDOWN:
-            if event.key == pygame.locals.K_SPACE:
-                print("Space pressed")
-                game.space_pressed()
+            if event.key == pygame.locals.K_RETURN:
+                print("Return (enter) pressed")
+                game.key_pressed("return")
+            elif event.key == pygame.locals.K_BACKSPACE:
+                print("Backspace pressed")
+                game.key_pressed("backspace")
+            else:
+                keychar = event.unicode
+                print(f"{keychar} pressed")
+                game.key_pressed(keychar)
+
                     
     DISPLAYSURF.fill("white")
     game.draw(DISPLAYSURF)

@@ -17,6 +17,7 @@ class GameState:
         self.old_arrow = None
         # possible states: start, play, name
         self.state = "start"
+        self.mode = "play"
         
     @property
     def state(self):
@@ -58,8 +59,9 @@ class GameState:
             drawfunc(surface)
 
     def handle_click(self, pos):
-        #print(pygame.mouse.get_pos())
-        # check if an arrow was clicked
+        # do not get any mouse input while naming a player
+        if self.mode == "name":
+            return
         if self.click_callback.get("grid_arrow", None):
             for arrow in self.grid.arrows:
                 if arrow.rect.collidepoint(pos):
@@ -150,6 +152,7 @@ class GameState:
         player.is_selected = True
     
     def player_selection_note_clicked(self, player):
+        self.player_note_clicked(player=player)
         self.player_notes.assign_number(player)
 
     def player_confirm_note_clicked(self):
@@ -165,7 +168,36 @@ class GameState:
         if self.selected_grid_room:
             self.selected_grid_room.color = room.color
             self.selected_grid_room.number = room.number
-
+    
+    def key_pressed(self, keychar):
+        if keychar == "return":
+            self.return_pressed()
+        elif self.mode == "name":
+            self.name(keychar)
+        elif keychar == " ":
+            self.space_pressed()
+    
+    def return_pressed(self):
+        if self.mode == "play" and self.selected_player != None:
+            self.mode = "name"
+            self.selected_player.name = "_"
+            print(self.selected_player.name)
+        elif self.mode == "name":
+            self.name(None)
+            self.mode = "play"
+    
     def space_pressed(self):
         # Space bar toggles show info
         self.grid.toggle_show_info()
+        
+    def name(self, char):
+        if self.selected_player: 
+            self.selected_player.name = self.selected_player.name[:-1]
+            if char == "backspace":
+                if self.selected_player.name:
+                    self.selected_player.name = self.selected_player.name[:-1]
+                self.selected_player.name += "_"
+            elif char:
+                self.selected_player.name += char + "_"
+        else:
+            print("tried to name without a player")

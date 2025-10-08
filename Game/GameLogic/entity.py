@@ -189,12 +189,18 @@ class Player(Text_Sprite):
         super().__init__(sprite_size=sprite_size, color=color)
         self.color = color
         self.number = number
+        self.name = ""
         self.is_selected = False
         self.is_selected_image = pygame.image.load(os.path.join(ASSETS_BASE, "O.png"))
         self.is_selected_image = pygame.transform.scale(self.is_selected_image, selected_sprite_size)
 
+    def display_name(self):
+        if self.name:
+            return self.name
+        return self.number
+    
     def draw(self, surface):
-        self.text = self.number
+        self.text = self.display_name()
         super().draw(surface)
         if self.is_selected:
             surface.blit(self.is_selected_image, (self.rect.centerx - self.is_selected_image.get_width()/2, self.rect.centery - self.is_selected_image.get_height()/2))
@@ -218,7 +224,7 @@ class Info(Text_Sprite):
         if player:
             self.player_info_sprite.color = player.color
             if player.number > 0:
-                self.text = player.number
+                self.text = player.display_name()
             else:
                 self.text = None
         else:

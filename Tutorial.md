@@ -48,3 +48,5 @@ The picture in the top-right corner of the potential rooms represents an unknown
 ### Make Notes
 
 TODO!!
+
+TODO: Name a player key return/enter to start and exit naming
