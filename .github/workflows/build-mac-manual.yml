@@ -103,11 +103,8 @@ jobs:
         shell: powershell
         run: |
           .\venv\Scripts\Activate.ps1
-          if ('${{ github.event.inputs.windows_onefile }}' -eq 'true') {
-            .\venv\Scripts\pyinstaller.exe --noconfirm --clean --onefile --windowed --name Room25 --add-data "Game\Assets;Game\Assets" Game\__main__.py
-          } else {
-            .\venv\Scripts\pyinstaller.exe --noconfirm --clean --windowed --name Room25 --add-data "Game\Assets;Game\Assets" Game\__main__.py
-          }
+          # Use the repository spec file so CI matches the manual build command
+          .\venv\Scripts\pyinstaller.exe --clean Room25.spec
 
       - name: Archive build (Windows)
         shell: powershell
