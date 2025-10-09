@@ -199,7 +199,7 @@ class Player(Text_Sprite):
         self.is_selected_image = pygame.transform.scale(self.is_selected_image, selected_sprite_size)
 
     def display_name(self):
-        if self.name:
+        if self.name and self.number != 0:
             return self.name
         return self.number
     
