@@ -106,14 +106,36 @@ jobs:
           # Use the repository spec file so CI matches the manual build command
           .\venv\Scripts\pyinstaller.exe --clean Room25.spec
 
+      - name: List dist contents (debug)
+        shell: powershell
+        run: |
+          Write-Host "Contents of dist after PyInstaller:"; if (Test-Path .\dist) { Get-ChildItem -Recurse -Force .\dist | ForEach-Object { Write-Host $_.FullName " [" $_.Length "]" } } else { Write-Host "dist not found" }
+
       - name: Archive build (Windows)
         shell: powershell
         run: |
-          if (Test-Path .\dist\Room25.exe) {
-            Compress-Archive -Path .\dist\Room25.exe -DestinationPath .\Room25-windows-${{ github.run_id }}.zip -Force
+          $outName = "Room25-windows-${{ github.run_id }}"
+          $zipPath = "./$outName.zip"
+          if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+
+          # Create a clean temporary folder and copy built outputs into it
+          if (Test-Path .\dist\Room25) {
+            if (Test-Path .\$outName) { Remove-Item -Recurse -Force .\$outName }
+            Copy-Item -Recurse -Force .\dist\Room25 .\$outName
+          } elseif (Test-Path .\dist\Room25.exe) {
+            if (Test-Path .\$outName) { Remove-Item -Recurse -Force .\$outName }
+            New-Item -ItemType Directory -Path .\$outName | Out-Null
+            Copy-Item .\dist\Room25.exe .\$outName\
           } else {
-            Compress-Archive -Path .\dist\Room25\* -DestinationPath .\Room25-windows-${{ github.run_id }}.zip -Force
+            Write-Host "No expected build outputs found under dist. Listing dist:"; Get-ChildItem -Recurse -Force .\dist | ForEach-Object { Write-Host $_.FullName }
+            Exit 1
           }
+
+          # Compress the folder (ensures zip contains the folder's contents, not an inner zip)
+          Compress-Archive -Path .\$outName\* -DestinationPath $zipPath -Force
+
+          # Clean up temporary folder
+          Remove-Item -Recurse -Force .\$outName
 
       - name: Upload artifact (windows)
         uses: actions/upload-artifact@v4
