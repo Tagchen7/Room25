@@ -12,11 +12,11 @@ on:
       create_release:
         description: 'If true, create a DRAFT GitHub Release and attach the built artifacts'
         required: false
-        default: 'false'
+        default: 'true'
       build_mac:
         description: 'Build macOS artifact (true/false)'
         required: false
-        default: 'true'
+        default: 'false'
       build_windows:
         description: 'Build Windows artifact (true/false)'
         required: false
@@ -24,7 +24,7 @@ on:
       build_linux:
         description: 'Build Linux artifact (true/false)'
         required: false
-        default: 'false'
+        default: 'true'
       windows_onefile:
         description: 'Build Windows onefile executable instead of onedir (true/false)'
         required: false
@@ -32,7 +32,7 @@ on:
       include_mac:
         description: 'Include mac artifact in draft release (true/false)'
         required: false
-        default: 'true'
+        default: 'false'
       include_windows:
         description: 'Include windows artifact in draft release (true/false)'
         required: false
@@ -40,7 +40,11 @@ on:
       include_linux:
         description: 'Include linux artifact in draft release (true/false)'
         required: false
-        default: 'false'
+        default: 'true'
+
+# Give the workflow permission to create releases and upload assets
+permissions:
+  contents: write
 
 jobs:
   build-macos:
