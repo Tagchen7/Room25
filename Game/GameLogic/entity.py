@@ -225,10 +225,13 @@ class Info(Text_Sprite):
     @player.setter
     def player(self, player):
         self._player = player
-        if player:
-            self.player_info_sprite.color = player.color
-            if player.number > 0:
-                self.text = player.display_name()
+        self.update_display()
+    
+    def update_display(self):
+        if self.player:
+            self.player_info_sprite.color = self.player.color
+            if self.player.number > 0:
+                self.text = self.player.display_name()
             else:
                 self.text = None
         else:
@@ -280,6 +283,7 @@ class Room(Base_Room):
         for i, info in enumerate(self.info):
             info.change_image(height=self.info_height, width=new_sprite_width)
             info.rect.bottomleft = (self.rect.bottomleft[0] + i * info.rect.width, self.rect.bottomleft[1])
+            info.update_display()
     
     def draw(self, surface):
         super().draw(surface)

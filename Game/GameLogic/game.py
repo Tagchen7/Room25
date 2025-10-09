@@ -187,6 +187,7 @@ class GameState:
             print(self.selected_player.name)
         elif self.mode == "name":
             self.name(None)
+            self.room_notes.all_rooms()
             self.mode = "play"
     
     def space_pressed(self):
