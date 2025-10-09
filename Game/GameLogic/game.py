@@ -196,8 +196,9 @@ class GameState:
             if char == "backspace":
                 if self.selected_player.name:
                     self.selected_player.name = self.selected_player.name[:-1]
-                self.selected_player.name += "_"
             elif char:
-                self.selected_player.name += char + "_"
+                self.selected_player.name += char
+            if char != None:
+                self.selected_player.name += "_"
         else:
             print("tried to name without a player")
