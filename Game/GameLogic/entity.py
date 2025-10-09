@@ -549,3 +549,7 @@ class Player_Notes():
         if not self.confirmed_players:
             self.confirm_note.draw(surface=surface)
             surface.blit(self.confirm_image, (self.confirm_note.rect.centerx - self.confirm_image.get_width()/2, self.confirm_note.rect.centery - self.confirm_image.get_height()/2))
+
+def draw_caption(pos, text, surface, font="arial", textsize=30):
+    rendered_text = pygame.font.SysFont(font, textsize).render(f"{text}", True, (0,0,0))
+    surface.blit(rendered_text, pos)
