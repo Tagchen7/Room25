@@ -189,7 +189,7 @@ class Text_Sprite(pygame.sprite.Sprite):
             surface.blit(self.rendered_text, (self.rect.x + self.rect.width/2 - self.rendered_text.get_width()/2, self.rect.y + self.rect.height/2 - self.rendered_text.get_height()/2))
 
 class Player(Text_Sprite):
-    def __init__(self, sprite_size, color, number=0, selected_sprite_size=(40, 40)):
+    def __init__(self, sprite_size, color, number=0, selected_sprite_size=(50, 50)):
         super().__init__(sprite_size=sprite_size, color=color)
         self.color = color
         self.number = number
@@ -493,14 +493,15 @@ class Player_Notes():
     selection_center = (100, 200)
     min_players = 4
 
-    def __init__(self, sprite_size=(50, 50), selected_sprite_size=(40, 40)) -> None:
+    def __init__(self, sprite_size=(50, 50), selected_sprite_size=(50, 50), check_sprite_size=(40, 40)) -> None:
         self.sprite_size = sprite_size
         self.selected_sprite_size = selected_sprite_size
+        self.check_sprite_size = check_sprite_size
         self.players = self.all_players(ordered=False)
         self.confirm_note = Info(color=ROOMCOLOR["white"], sprite_size=sprite_size, player=None)
         self.confirmed_players = False
         self.confirm_image = pygame.image.load(os.path.join(ASSETS_BASE, "Check.png"))
-        self.confirm_image = pygame.transform.scale(self.confirm_image, selected_sprite_size)
+        self.confirm_image = pygame.transform.scale(self.confirm_image, check_sprite_size)
         self.update_rect_pos()
 
     def all_players(self, ordered = False):
