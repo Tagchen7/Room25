@@ -58,7 +58,8 @@ class GameState:
         for drawfunc in self.draw_callback.values():
             drawfunc(surface)
         if self.state == "start":
-            entity.draw_caption(pos=(200, 75), text="Player Selection", surface=surface)
+            pos = (self.player_notes.selection_center[0], self.player_notes.selection_center[1] - 2*self.player_notes.sprite_size[1])
+            entity.draw_caption(pos=pos, text="Player Selection", surface=surface)
 
     def handle_click(self, pos):
         # do not get any mouse input while naming a player

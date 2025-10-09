@@ -39,6 +39,10 @@ PLAYERCOLOR = {
     "red" : (250, 0, 0)
 }
 
+FONT = "Cooper Black"
+FONT_SIZE = 20
+CAPTION_SIZE = 40
+
 def get_color_name(color=ROOMCOLOR["grey"]):
     if color == ROOMCOLOR["red"]:
         return "Red"
@@ -159,7 +163,7 @@ class Text_Sprite(pygame.sprite.Sprite):
     @text.setter
     def text(self, text):
         self._text = text
-        self.rendered_text = pygame.font.SysFont('arial', 15).render(f"{self.text}", True, (0,0,0))
+        self.rendered_text = pygame.font.SysFont(FONT, FONT_SIZE).render(f"{self.text}", True, (0,0,0))
 
     
     def change_image(self, width=None, height=None, size=None, color=None, text=None):
@@ -308,7 +312,7 @@ class Shift_Arrow(pygame.sprite.Sprite):
     @consecutive_clicks.setter
     def consecutive_clicks(self, consecutive_clicks):
         self._consecutive_clicks = consecutive_clicks
-        self.rendered_text = pygame.font.SysFont('arial', 15).render(f"{self.consecutive_clicks}", True, (0,0,0))
+        self.rendered_text = pygame.font.SysFont(FONT, FONT_SIZE).render(f"{self.consecutive_clicks}", True, (0,0,0))
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)
@@ -550,6 +554,6 @@ class Player_Notes():
             self.confirm_note.draw(surface=surface)
             surface.blit(self.confirm_image, (self.confirm_note.rect.centerx - self.confirm_image.get_width()/2, self.confirm_note.rect.centery - self.confirm_image.get_height()/2))
 
-def draw_caption(pos, text, surface, font="arial", textsize=30):
-    rendered_text = pygame.font.SysFont(font, textsize).render(f"{text}", True, (0,0,0))
+def draw_caption(pos, text, surface):
+    rendered_text = pygame.font.SysFont(FONT, CAPTION_SIZE).render(f"{text}", True, (0,0,0))
     surface.blit(rendered_text, pos)
