@@ -1,0 +1,284 @@
+name: Build multi-platform (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_name:
+        description: 'Optional release name / label for the artifact'
+        required: false
+      release_notes:
+        description: 'Optional release notes body (overrides the default template)'
+        required: false
+      create_release:
+        description: 'If true, create a DRAFT GitHub Release and attach the built artifacts'
+        required: false
+        default: 'false'
+      build_mac:
+        description: 'Build macOS artifact (true/false)'
+        required: false
+        default: 'true'
+      build_windows:
+        description: 'Build Windows artifact (true/false)'
+        required: false
+        default: 'true'
+      build_linux:
+        description: 'Build Linux artifact (true/false)'
+        required: false
+        default: 'false'
+      windows_onefile:
+        description: 'Build Windows onefile executable instead of onedir (true/false)'
+        required: false
+        default: 'false'
+      include_mac:
+        description: 'Include mac artifact in draft release (true/false)'
+        required: false
+        default: 'true'
+      include_windows:
+        description: 'Include windows artifact in draft release (true/false)'
+        required: false
+        default: 'true'
+      include_linux:
+        description: 'Include linux artifact in draft release (true/false)'
+        required: false
+        default: 'false'
+
+jobs:
+  build-macos:
+    if: ${{ github.event.inputs.build_mac == 'true' }}
+    runs-on: macos-latest
+    name: Build macOS
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Homebrew deps (optional, helps pygame)
+        run: |
+          brew update || true
+          brew install sdl2 sdl2_image sdl2_mixer sdl2_ttf portmidi || true
+
+      - name: Create venv and install Python packages
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          python -m pip install --upgrade pip setuptools wheel
+          pip install pyinstaller pygame Pillow
+
+      - name: Build with PyInstaller
+        run: |
+          source venv/bin/activate
+          pyinstaller --noconfirm --clean --windowed --name Room25 \
+            --add-data "Game/Assets:Game/Assets" \
+            Game/__main__.py
+
+      - name: Archive build (mac)
+        run: |
+          cd dist
+          zip -r ../Room25-macos-${{ github.run_id }}.zip Room25
+
+      - name: Upload artifact (mac)
+        uses: actions/upload-artifact@v4
+        with:
+          name: room25-macos
+          path: Room25-macos-${{ github.run_id }}.zip
+
+  build-windows:
+    if: ${{ github.event.inputs.build_windows == 'true' }}
+    runs-on: windows-latest
+    name: Build Windows
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Create venv and install Python packages (Windows)
+        shell: powershell
+        run: |
+          python -m venv venv
+          .\venv\Scripts\Activate.ps1
+          python -m pip install --upgrade pip setuptools wheel
+          pip install pyinstaller pygame Pillow
+
+      - name: Build with PyInstaller (Windows)
+        shell: powershell
+        run: |
+          .\venv\Scripts\Activate.ps1
+          if ('${{ github.event.inputs.windows_onefile }}' -eq 'true') {
+            .\venv\Scripts\pyinstaller.exe --noconfirm --clean --onefile --windowed --name Room25 --add-data "Game\Assets;Game\Assets" Game\__main__.py
+          } else {
+            .\venv\Scripts\pyinstaller.exe --noconfirm --clean --windowed --name Room25 --add-data "Game\Assets;Game\Assets" Game\__main__.py
+          }
+
+      - name: Archive build (Windows)
+        shell: powershell
+        run: |
+          if (Test-Path .\dist\Room25.exe) {
+            Compress-Archive -Path .\dist\Room25.exe -DestinationPath .\Room25-windows-${{ github.run_id }}.zip -Force
+          } else {
+            Compress-Archive -Path .\dist\Room25\* -DestinationPath .\Room25-windows-${{ github.run_id }}.zip -Force
+          }
+
+      - name: Upload artifact (windows)
+        uses: actions/upload-artifact@v4
+        with:
+          name: room25-windows
+          path: Room25-windows-${{ github.run_id }}.zip
+
+  build-linux:
+    if: ${{ github.event.inputs.build_linux == 'true' }}
+    runs-on: ubuntu-latest
+    name: Build Linux
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y build-essential libasound2-dev libfreetype6-dev libportmidi-dev libsdl2-2.0-0 libsdl2-image-2.0-0 libsdl2-mixer-2.0-0 libsdl2-ttf-2.0-0
+
+      - name: Create venv and install Python packages (Linux)
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          python -m pip install --upgrade pip setuptools wheel
+          pip install pyinstaller pygame Pillow
+
+      - name: Build with PyInstaller (Linux)
+        run: |
+          source venv/bin/activate
+          pyinstaller --noconfirm --clean --windowed --name Room25 --add-data "Game/Assets:Game/Assets" Game/__main__.py
+
+      - name: Archive build (Linux)
+        run: |
+          tar -czf Room25-linux-${{ github.run_id }}.tar.gz -C dist Room25
+
+      - name: Upload artifact (linux)
+        uses: actions/upload-artifact@v4
+        with:
+          name: room25-linux
+          path: Room25-linux-${{ github.run_id }}.tar.gz
+
+  create-release:
+    if: ${{ github.event.inputs.create_release == 'true' }}
+    needs: [build-macos, build-windows, build-linux]
+    runs-on: ubuntu-latest
+    name: Create draft Release and attach selected artifacts
+    steps:
+      - name: Download mac artifact (if present)
+        uses: actions/download-artifact@v4
+        with:
+          name: room25-macos
+          path: room25-macos
+        continue-on-error: true
+
+      - name: Download windows artifact (if present)
+        uses: actions/download-artifact@v4
+        with:
+          name: room25-windows
+          path: room25-windows
+        continue-on-error: true
+
+      - name: Download linux artifact (if present)
+        uses: actions/download-artifact@v4
+        with:
+          name: room25-linux
+          path: room25-linux
+        continue-on-error: true
+
+      - name: Compute SHA256 for artifacts
+        id: compute_hashes
+        run: |
+          set -e
+          MAC_FILE=$(ls room25-macos/*.zip 2>/dev/null || true)
+          WIN_FILE=$(ls room25-windows/*.zip 2>/dev/null || true)
+          LNX_FILE=$(ls room25-linux/*.tar.gz 2>/dev/null || true)
+          if [ -n "$MAC_FILE" ]; then MAC_HASH=$(sha256sum "$MAC_FILE" | awk '{print $1}'); MAC_NAME=$(basename "$MAC_FILE"); else MAC_HASH=; MAC_NAME=; fi
+          if [ -n "$WIN_FILE" ]; then WIN_HASH=$(sha256sum "$WIN_FILE" | awk '{print $1}'); WIN_NAME=$(basename "$WIN_FILE"); else WIN_HASH=; WIN_NAME=; fi
+          if [ -n "$LNX_FILE" ]; then LNX_HASH=$(sha256sum "$LNX_FILE" | awk '{print $1}'); LNX_NAME=$(basename "$LNX_FILE"); else LNX_HASH=; LNX_NAME=; fi
+          echo "MAC_FILE=$MAC_FILE" >> $GITHUB_OUTPUT
+          echo "MAC_NAME=$MAC_NAME" >> $GITHUB_OUTPUT
+          echo "MAC_HASH=$MAC_HASH" >> $GITHUB_OUTPUT
+          echo "WIN_FILE=$WIN_FILE" >> $GITHUB_OUTPUT
+          echo "WIN_NAME=$WIN_NAME" >> $GITHUB_OUTPUT
+          echo "WIN_HASH=$WIN_HASH" >> $GITHUB_OUTPUT
+          echo "LNX_FILE=$LNX_FILE" >> $GITHUB_OUTPUT
+          echo "LNX_NAME=$LNX_NAME" >> $GITHUB_OUTPUT
+          echo "LNX_HASH=$LNX_HASH" >> $GITHUB_OUTPUT
+
+      - name: Generate release notes (template)
+        id: gen_notes
+        run: |
+          TAG=${{ github.ref_name }}
+          if [ -z "$TAG" ]; then TAG="run-${GITHUB_RUN_ID}"; fi
+          MACNAME=${{ steps.compute_hashes.outputs.MAC_NAME }}
+          WINNAME=${{ steps.compute_hashes.outputs.WIN_NAME }}
+          LNXNAME=${{ steps.compute_hashes.outputs.LNX_NAME }}
+          MACHASH=${{ steps.compute_hashes.outputs.MAC_HASH }}
+          WINHASH=${{ steps.compute_hashes.outputs.WIN_HASH }}
+          LNXHASH=${{ steps.compute_hashes.outputs.LNX_HASH }}
+          BODY="Room25 Helper — multi-platform build\nVersion: ${TAG}\n\nIncluded builds:\n"
+          if [ -n "$MACNAME" ]; then BODY="$BODY- macOS: ${MACNAME} (SHA256: ${MACHASH})\n"; fi
+          if [ -n "$WINNAME" ]; then BODY="$BODY- Windows: ${WINNAME} (SHA256: ${WINHASH})\n"; fi
+          if [ -n "$LNXNAME" ]; then BODY="$BODY- Linux: ${LNXNAME} (SHA256: ${LNXHASH})\n"; fi
+          BODY="$BODY\nHow to run\n- macOS: unzip and open Room25.app\n- Windows: unzip and run Room25.exe\n- Linux: tar -xzf and run the executable\n\nNotes\n- These builds are unsigned; macOS Gatekeeper or Windows SmartScreen may warn. Verify SHA256 above.\n\nContact / Support\n- Report issues at: https://github.com/Tagchen7/Room25/issues\n"
+          if [ -n "${{ github.event.inputs.release_notes }}" ]; then
+            echo "body<<EOF" >> $GITHUB_OUTPUT
+            echo "${{ github.event.inputs.release_notes }}" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "body<<EOF" >> $GITHUB_OUTPUT
+            echo "$BODY" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+
+      - name: Create draft release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.ref_name || format('v{0}', github.run_number) }}
+          release_name: ${{ github.event.inputs.release_name || 'Room25 multi-platform build' }}
+          body: ${{ steps.gen_notes.outputs.body }}
+          draft: true
+          prerelease: false
+
+      - name: Upload mac release asset (if requested and present)
+        if: ${{ github.event.inputs.include_mac == 'true' && steps.compute_hashes.outputs.MAC_FILE != '' }}
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.compute_hashes.outputs.MAC_FILE }}
+          asset_name: ${{ steps.compute_hashes.outputs.MAC_NAME }}
+          asset_content_type: application/zip
+
+      - name: Upload windows release asset (if requested and present)
+        if: ${{ github.event.inputs.include_windows == 'true' && steps.compute_hashes.outputs.WIN_FILE != '' }}
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.compute_hashes.outputs.WIN_FILE }}
+          asset_name: ${{ steps.compute_hashes.outputs.WIN_NAME }}
+          asset_content_type: application/zip
+
+      - name: Upload linux release asset (if requested and present)
+        if: ${{ github.event.inputs.include_linux == 'true' && steps.compute_hashes.outputs.LNX_FILE != '' }}
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ steps.compute_hashes.outputs.LNX_FILE }}
+          asset_name: ${{ steps.compute_hashes.outputs.LNX_NAME }}
+          asset_content_type: application/gzip
+
