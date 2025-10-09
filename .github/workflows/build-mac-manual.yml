@@ -29,18 +29,6 @@ on:
         description: 'Build Windows onefile executable instead of onedir (true/false)'
         required: false
         default: 'false'
-      include_mac:
-        description: 'Include mac artifact in draft release (true/false)'
-        required: false
-        default: 'false'
-      include_windows:
-        description: 'Include windows artifact in draft release (true/false)'
-        required: false
-        default: 'true'
-      include_linux:
-        description: 'Include linux artifact in draft release (true/false)'
-        required: false
-        default: 'true'
 
 # Give the workflow permission to create releases and upload assets
 permissions:
@@ -222,6 +210,13 @@ jobs:
           echo "LNX_NAME=$LNX_NAME" >> $GITHUB_OUTPUT
           echo "LNX_HASH=$LNX_HASH" >> $GITHUB_OUTPUT
 
+      - name: Detected artifacts (diagnostic)
+        run: |
+          echo "MAC_NAME=${{ steps.compute_hashes.outputs.MAC_NAME }}"
+          echo "WIN_NAME=${{ steps.compute_hashes.outputs.WIN_NAME }}"
+          echo "LNX_NAME=${{ steps.compute_hashes.outputs.LNX_NAME }}"
+        shell: bash
+
       - name: Generate release notes (template)
         id: gen_notes
         run: |
@@ -259,26 +254,24 @@ jobs:
           draft: true
           prerelease: false
 
-      - name: Upload mac release asset (if requested and present)
-        if: ${{ github.event.inputs.include_mac == 'true' && steps.compute_hashes.outputs.MAC_FILE != '' }}
+      - name: Upload mac release asset (if present)
+        if: ${{ steps.compute_hashes.outputs.MAC_FILE != '' }}
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ steps.compute_hashes.outputs.MAC_FILE }}
           asset_name: ${{ steps.compute_hashes.outputs.MAC_NAME }}
           asset_content_type: application/zip
-
-      - name: Upload windows release asset (if requested and present)
-        if: ${{ github.event.inputs.include_windows == 'true' && steps.compute_hashes.outputs.WIN_FILE != '' }}
+      - name: Upload windows release asset (if present)
+        if: ${{ steps.compute_hashes.outputs.WIN_FILE != '' }}
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ steps.compute_hashes.outputs.WIN_FILE }}
           asset_name: ${{ steps.compute_hashes.outputs.WIN_NAME }}
           asset_content_type: application/zip
-
-      - name: Upload linux release asset (if requested and present)
-        if: ${{ github.event.inputs.include_linux == 'true' && steps.compute_hashes.outputs.LNX_FILE != '' }}
+      - name: Upload linux release asset (if present)
+        if: ${{ steps.compute_hashes.outputs.LNX_FILE != '' }}
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
