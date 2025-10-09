@@ -499,7 +499,7 @@ class Player_Notes():
         self.players = self.all_players(ordered=False)
         self.confirm_note = Info(color=ROOMCOLOR["white"], sprite_size=sprite_size, player=None)
         self.confirmed_players = False
-        self.confirm_image = pygame.image.load(os.path.join(ASSETS_BASE, "O.png"))
+        self.confirm_image = pygame.image.load(os.path.join(ASSETS_BASE, "Check.png"))
         self.confirm_image = pygame.transform.scale(self.confirm_image, selected_sprite_size)
         self.update_rect_pos()
 
