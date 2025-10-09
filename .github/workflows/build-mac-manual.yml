@@ -25,10 +25,6 @@ on:
         description: 'Build Linux artifact (true/false)'
         required: false
         default: 'true'
-      windows_onefile:
-        description: 'Build Windows onefile executable instead of onedir (true/false)'
-        required: false
-        default: 'false'
 
 # Give the workflow permission to create releases and upload assets
 permissions:
