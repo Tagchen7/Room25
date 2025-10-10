@@ -16,45 +16,6 @@ def _resolve_assets_base():
         if meipass:
             candidates.append(meipass)
 
-        # py2app exposes RESOURCEPATH in the environment
-        resourcepath = os.environ.get('RESOURCEPATH')
-        if resourcepath:
-            candidates.append(resourcepath)
-
-        # macOS .app bundles: Resources are usually at ../Resources from executable
-        try:
-            exe_dir = os.path.dirname(sys.executable)
-            app_resources = os.path.join(os.path.dirname(os.path.dirname(sys.executable)), 'Resources')
-            candidates.append(app_resources)
-            candidates.append(exe_dir)
-        except Exception:
-            pass
-
-    # 2) Running from source in the repository — derive repo root from this file
-    try:
-        repo_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-        candidates.append(os.path.join(repo_root, 'Game'))
-        candidates.append(os.path.join(repo_root, 'Game', 'Assets'))
-    except Exception:
-        pass
-
-    # 3) Check each candidate for the expected assets layout and pick the first that exists
-    for base in candidates:
-        if not base:
-            continue
-        # common layouts added by --add-data "Game/Assets:Game/Assets"
-        maybe = os.path.join(base, 'Game', 'Assets')
-        if os.path.isdir(maybe):
-            return os.path.normpath(maybe)
-        # sometimes the assets are copied directly under Resources or _MEIPASS
-        maybe2 = os.path.join(base, 'Assets')
-        if os.path.isdir(maybe2):
-            return os.path.normpath(maybe2)
-        # or the base already is the Game folder
-        maybe3 = os.path.join(base, 'Assets') if base.endswith('Game') else os.path.join(base, 'Game', 'Assets')
-        if os.path.isdir(maybe3):
-            return os.path.normpath(maybe3)
-
     # Last resort: assume repository layout relative to this file
     try:
         fallback = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'Game', 'Assets')
