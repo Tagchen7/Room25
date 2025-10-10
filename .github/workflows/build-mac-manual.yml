@@ -48,6 +48,13 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install pyinstaller pygame Pillow
 
+      - name: Import check (lightweight)
+        shell: powershell
+        run: |
+          .\venv\Scripts\Activate.ps1
+          Write-Host "Running lightweight import checks..."
+          python -c 'import pkgutil,sys; modules=[m.name for m in pkgutil.iter_modules()]; print("pkgutil contains Game:", "Game" in modules); import Game, Game.GameLogic; print("Imported Game and Game.GameLogic OK")'
+
       - name: Build with PyInstaller (Windows)
         shell: powershell
         run: |
@@ -59,6 +66,12 @@ jobs:
         shell: powershell
         run: |
           Write-Host "Contents of dist after PyInstaller:"; if (Test-Path .\dist) { Get-ChildItem -Recurse -Force .\dist | ForEach-Object { Write-Host $_.FullName " [" $_.Length "]" } } else { Write-Host "dist not found" }
+
+      - name: Upload raw dist folder (debug)
+        uses: actions/upload-artifact@v4
+        with:
+          name: room25-dist-raw
+          path: dist/Room25
 
       - name: Archive build (Windows)
         shell: powershell
@@ -80,8 +93,17 @@ jobs:
             Exit 1
           }
 
-          # Compress the folder (ensures zip contains the folder's contents, not an inner zip)
-          Compress-Archive -Path .\$outName\* -DestinationPath $zipPath -Force
+          # Show what will be archived
+          Write-Host "Contents of temp folder to be zipped:"; Get-ChildItem -Recurse -Force .\$outName | ForEach-Object { Write-Host $_.FullName }
+
+          # Compress the temporary folder itself so the zip contains a single top-level folder
+          Compress-Archive -Path .\$outName -DestinationPath $zipPath -Force
+
+          # List zip entries to confirm the archive contents
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip = [System.IO.Compression.ZipFile]::OpenRead($zipPath)
+          Write-Host "Zip entries:"; $zip.Entries | ForEach-Object { Write-Host $_.FullName }
+          $zip.Dispose()
 
           # Clean up temporary folder
           Remove-Item -Recurse -Force .\$outName
