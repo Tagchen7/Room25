@@ -5,3 +5,4 @@
   - maybe with minsize + scale? same as fullscreen?
   - Problem: text to large with smaller colornotes
 - Restart
+- Save/Load (Export/Import)
