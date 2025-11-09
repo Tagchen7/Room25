@@ -10,6 +10,7 @@ class GameState:
         self.room_notes = entity.Room_Notes()
         self.color_notes = entity.Color_Notes()
         self.player_notes = entity.Player_Notes()
+        self.setting_notes = entity.Setting_Notes()
         #TODO: add player selection
         self.selected_player = None
         self.selected_grid_room = None
@@ -42,6 +43,8 @@ class GameState:
         self.draw_callback["player_notes"] = self.player_notes.draw
         self.click_callback["player_notes"] = self.player_selection_note_clicked
         self.click_callback["confirm_note"] = self.player_confirm_note_clicked
+        self.draw_callback["setting_notes"] = self.setting_notes.draw
+        self.click_callback["setting_notes"] = self.setting_note_clicked
     
     def play_state(self):
         self.draw_callback["grid"] = self.grid.draw
@@ -53,6 +56,8 @@ class GameState:
         self.click_callback["color_notes"] = self.color_note_clicked
         self.draw_callback["player_notes"] = self.player_notes.draw
         self.click_callback["player_notes"] = self.player_note_clicked
+        self.draw_callback["setting_notes"] = self.setting_notes.draw
+        self.click_callback["setting_notes"] = self.setting_note_clicked
     
     def draw(self, surface):
         for drawfunc in self.draw_callback.values():
@@ -65,6 +70,15 @@ class GameState:
         # do not get any mouse input while naming a player
         if self.mode == "name":
             return
+        if self.click_callback.get("setting_notes", None):
+            for note in self.setting_notes.all_notes():
+                if note.rect.collidepoint(pos):
+                    print(f"Clicked on setting note")
+                    self.click_callback["setting_notes"](note)
+                    return
+        else:
+            self.setting_notes.deselect_all()
+            
         if self.click_callback.get("grid_arrow", None):
             for arrow in self.grid.arrows:
                 if arrow.rect.collidepoint(pos):
@@ -99,7 +113,7 @@ class GameState:
                 if self.player_notes.confirm_note.rect.collidepoint(pos):
                     print(f"Clicked on confirm note")
                     self.click_callback["confirm_note"]()
-
+                    return
                 
     def deselect_old_grid(self):
         if self.old_grid_room:
@@ -171,14 +185,46 @@ class GameState:
         if self.selected_grid_room:
             self.selected_grid_room.color = room.color
             self.selected_grid_room.number = room.number
+            
+    def setting_note_clicked(self, note):
+        # undo selection of other setting notes
+        if note != self.setting_notes.save_note:
+            self.setting_notes.save = False
+        if note != self.setting_notes.load_note:
+            self.setting_notes.load = False
+        if note != self.setting_notes.restart_note:
+            self.setting_notes.restart = False
+            
+        if note == self.setting_notes.save_note:
+            self.save_game("savefile.txt")
+        elif note == self.setting_notes.load_note:
+            self.load_game("savefile.txt")
+        elif note == self.setting_notes.restart_note:
+            self.restart_game()
     
     def key_pressed(self, keychar):
         if keychar == "return":
             self.return_pressed()
-        elif self.mode == "name":
+            self.setting_notes.deselect_all()
+            return
+        if self.mode == "name":
             self.name(keychar)
-        elif keychar == " ":
+            return
+        
+        if keychar == "r":
+            self.setting_note_clicked(self.setting_notes.restart_note)
+            return
+        if keychar == "s":
+            self.setting_note_clicked(self.setting_notes.save_note)
+            return
+        if keychar == "l":
+            self.setting_note_clicked(self.setting_notes.load_note)
+            return
+        self.setting_notes.deselect_all()
+        
+        if keychar == " ":
             self.space_pressed()
+            return
     
     def return_pressed(self):
         if self.mode == "play" and self.selected_player != None:
@@ -206,3 +252,32 @@ class GameState:
                 self.selected_player.name += "_"
         else:
             print("tried to name without a player")
+            
+    def save_game(self, filename):
+        if not self.setting_notes.save:
+            self.setting_notes.save = True
+            return
+        self.setting_notes.save = False
+        
+        print("Saving game...")
+        with open(filename, "w") as f:
+            f.write("Test_Save_Data")
+    
+    def load_game(self, filename):
+        if not self.setting_notes.load:
+            self.setting_notes.load = True
+            return
+        self.setting_notes.load = False
+        
+        print("Loading game...")
+        with open(filename) as f:
+            f.read()
+    
+    def restart_game(self):
+        if not self.setting_notes.restart:
+            self.setting_notes.restart = True
+            return
+        self.setting_notes.restart = False
+        
+        print("Restarting game...")
+        self.__init__()

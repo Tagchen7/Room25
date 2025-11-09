@@ -47,7 +47,6 @@ while True:
                 keychar = event.unicode
                 print(f"{keychar} pressed")
                 game.key_pressed(keychar)
-
                     
     DISPLAYSURF.fill("white")
     game.draw(DISPLAYSURF)

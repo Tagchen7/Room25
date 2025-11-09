@@ -577,3 +577,78 @@ class Player_Notes():
 def draw_caption(pos, text, surface):
     rendered_text = pygame.font.SysFont(FONT, CAPTION_SIZE).render(f"{text}", True, (0,0,0))
     surface.blit(rendered_text, pos)
+    
+class Setting_Notes():
+    starting_center = (600, 50)
+
+    def __init__(self, sprite_size = (50, 50), symbol_sprite_size = (30, 30)):
+        self.sprite_size = sprite_size
+        self.save_note = Info(color=ROOMCOLOR["white"], sprite_size=sprite_size, player=None)
+        self.load_note = Info(color=ROOMCOLOR["white"], sprite_size=sprite_size, player=None)
+        self.restart_note = Info(color=ROOMCOLOR["white"], sprite_size=sprite_size, player=None)
+        self.deselect_all()
+        self.save_image = pygame.image.load(os.path.join(ASSETS_BASE, "Check.png"))
+        self.save_image = pygame.transform.scale(self.save_image, symbol_sprite_size)
+        self.load_image = pygame.image.load(os.path.join(ASSETS_BASE, "Swap.png"))
+        self.load_image = pygame.transform.scale(self.load_image, symbol_sprite_size)
+        self.restart_image = pygame.image.load(os.path.join(ASSETS_BASE, "X.png"))
+        self.restart_image = pygame.transform.scale(self.restart_image, symbol_sprite_size)
+        self.init_rect_pos()
+    
+    @property
+    def save(self):
+        return self._save
+
+    @save.setter
+    def save(self, save_selected:bool):
+        self._save = save_selected
+        if self.save:
+            self.save_note.color = ROOMCOLOR["green"]
+        else:
+            self.save_note.color = ROOMCOLOR["white"]
+    
+    @property
+    def load(self):
+        return self._load
+
+    @load.setter
+    def load(self, load_selected:bool):
+        self._load = load_selected
+        if self.load:
+            self.load_note.color = ROOMCOLOR["yellow"]
+        else:
+            self.load_note.color = ROOMCOLOR["white"]
+    
+    @property
+    def restart(self):
+        return self._restart
+
+    @restart.setter
+    def restart(self, restart_selected:bool):
+        self._restart = restart_selected
+        if self.restart:
+            self.restart_note.color = ROOMCOLOR["red"]
+        else:
+            self.restart_note.color = ROOMCOLOR["white"]
+
+    def all_notes(self):
+        return [self.save_note] + [self.load_note] + [self.restart_note]
+    
+    def deselect_all(self):
+        self.save = False
+        self.load = False
+        self.restart = False
+
+    def init_rect_pos(self):
+        for i, note in enumerate(self.all_notes()):
+            note.rect.center = (self.starting_center[0], self.starting_center[1] + self.sprite_size[1] * i)
+
+    def draw(self, surface):
+        for note in self.all_notes():
+            note.draw(surface)
+            if note == self.save_note:
+                surface.blit(self.save_image, (note.rect.centerx - self.save_image.get_width()/2, note.rect.centery - self.save_image.get_height()/2))
+            if note == self.load_note:
+                surface.blit(self.load_image, (note.rect.centerx - self.load_image.get_width()/2, note.rect.centery - self.load_image.get_height()/2))
+            if note == self.restart_note:
+                surface.blit(self.restart_image, (note.rect.centerx - self.restart_image.get_width()/2, note.rect.centery - self.restart_image.get_height()/2))
