@@ -76,8 +76,7 @@ class GameState:
                     print(f"Clicked on setting note")
                     self.click_callback["setting_notes"](note)
                     return
-        else:
-            self.setting_notes.deselect_all()
+        self.setting_notes.deselect_all()
             
         if self.click_callback.get("grid_arrow", None):
             for arrow in self.grid.arrows:
