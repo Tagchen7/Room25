@@ -1,9 +1,9 @@
 # Contains the main game logic, including game initialization, game loop, collision detection, etc.
 from Game.GameLogic import entity
+import pickle
 
 class GameState:
     def __init__(self):
-        self.players = []
         self.draw_callback = {}
         self.click_callback = {}
         self.grid = entity.Grid()
@@ -11,7 +11,6 @@ class GameState:
         self.color_notes = entity.Color_Notes()
         self.player_notes = entity.Player_Notes()
         self.setting_notes = entity.Setting_Notes()
-        #TODO: add player selection
         self.selected_player = None
         self.selected_grid_room = None
         self.old_grid_room = None
@@ -259,8 +258,11 @@ class GameState:
         self.setting_notes.save = False
         
         print("Saving game...")
-        with open(filename, "w") as f:
-            f.write("Test_Save_Data")
+        #with open(filename, "w") as f:
+        #    f.write("Test_Save_Data")
+        
+        with open('savegame.pkl', 'wb') as f:
+            pickle.dump(self.to_save_dict(), f)
     
     def load_game(self, filename):
         if not self.setting_notes.load:
@@ -269,8 +271,11 @@ class GameState:
         self.setting_notes.load = False
         
         print("Loading game...")
-        with open(filename) as f:
-            f.read()
+        #with open(filename) as f:
+        #    f.read()
+            
+        with open('savegame.pkl', 'rb') as f:
+            self.from_save_dict(pickle.load(f))
     
     def restart_game(self):
         if not self.setting_notes.restart:
@@ -280,3 +285,39 @@ class GameState:
         
         print("Restarting game...")
         self.__init__()
+        
+    def to_save_dict(self):
+        # Convert the current game state to a dictionary for saving
+        save_dict = {
+            "grid": self.grid.to_save_dict(),
+            "player_notes": self.player_notes.to_save_dict(),
+            "state": self.state,
+            "mode": self.mode,
+        }
+        
+        return save_dict
+    
+    def from_save_dict(self, save_dict):
+        # Load the game state from a saved dictionary
+        self.grid.from_save_dict(save_dict["grid"])
+        self.player_notes.from_save_dict(save_dict["player_notes"])
+        self.state = save_dict["state"]
+        self.mode = save_dict["mode"]
+        
+        self.selected_player = None
+        for player in self.player_notes.players:
+            if player.is_selected:
+                self.selected_player = player
+                break
+        self.selected_grid_room = None
+        self.old_grid_room = None
+        for room in self.grid.rooms.values():
+            if room.is_selected:
+                self.selected_grid_room = room
+            if room.was_selected:
+                self.old_grid_room = room
+        self.old_arrow = None
+        for arrow in self.grid.arrows:
+            if arrow.consecutive_clicks > 0:
+                self.old_arrow = arrow
+                break

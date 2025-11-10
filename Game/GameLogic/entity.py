@@ -151,6 +151,16 @@ class Base_Room(pygame.sprite.Sprite):
     	
     def draw(self, surface):
         surface.blit(self.image, self.rect)
+    
+    def to_save_dict(self):
+        return {
+            "color": self.color,
+            "number": self.number
+        }
+    
+    def from_save_dict(self, data:dict):
+        self.color = data.get("color", self.color)
+        self.number = data.get("number", self.number)
 
 class Text_Sprite(pygame.sprite.Sprite):
 
@@ -224,6 +234,20 @@ class Player(Text_Sprite):
         if self.is_selected:
             surface.blit(self.is_selected_image, (self.rect.centerx - self.is_selected_image.get_width()/2, self.rect.centery - self.is_selected_image.get_height()/2))
 
+    def to_save_dict(self):
+        return {
+            "color": self.color,
+            "number": self.number,
+            "is_selected": self.is_selected,
+            "name": self.name
+        }
+    
+    def from_save_dict(self, data:dict):
+        self.color = data.get("color", self.color)
+        self.number = data.get("number", self.number)
+        self.is_selected = data.get("is_selected", self.is_selected)
+        self.name = data.get("name", self.name)
+
 class Info(Text_Sprite):
     show_player = True
     def __init__(self, sprite_size, color, player=None):
@@ -270,6 +294,21 @@ class Info(Text_Sprite):
         if self.text:
             surface.blit(self.rendered_text, (self.rect.x + self.rect.width/2 - self.rendered_text.get_width()/2, self.rect.y + self.rect.height/2 - self.rendered_text.get_height()/2))
 
+    def to_save_dict(self):
+        return {
+            "color": self.color,
+            "player": self.player.to_save_dict() if self.player else None
+        }
+        
+    def from_save_dict(self, data:dict):
+        self.color = data.get("color", self.color)
+        player_data = data.get("player", None)
+        if player_data:
+            if not self.player:
+                self.player = Player(sprite_size=(20, 20), color=PLAYERCOLOR["grey"])
+            self.player.from_save_dict(player_data)
+        else:
+            self.player = None
 
 class Room(Base_Room):
     show_info = True
@@ -311,7 +350,31 @@ class Room(Base_Room):
         if self.was_selected:
             pygame.draw.circle(surface, (180, 180, 180), self.rect.center, 5.5) # color = grey
         if self.is_selected:
-            pygame.draw.circle(surface, "green", self.rect.center, 5.5)          
+            pygame.draw.circle(surface, "green", self.rect.center, 5.5)
+    
+    def to_save_dict(self):
+        return {
+            "color": self.color,
+            "number": self.number,
+            "info": [info.to_save_dict() for info in self.info],
+            "is_selected": self.is_selected,
+            "was_selected": self.was_selected,
+            "corner": self.corner,
+        }
+    
+    def from_save_dict(self, data:dict):
+        self.color = data.get("color", self.color)
+        self.number = data.get("number", self.number)
+        info_data = data.get("info", [])
+        self.info = []
+        for info_dict in info_data:
+            info = Info(sprite_size=(self.info_height, self.info_height), color=ROOMCOLOR["grey"], player=None)
+            info.from_save_dict(info_dict)
+            self.info.append(info)
+        self.update_info()
+        self.is_selected = data.get("is_selected", self.is_selected)
+        self.was_selected = data.get("was_selected", self.was_selected)
+        self.corner = data.get("corner", self.corner)
 
 class Shift_Arrow(pygame.sprite.Sprite):
     def __init__(self, direction, number, sprite_size=(50, 50)):
@@ -342,6 +405,18 @@ class Shift_Arrow(pygame.sprite.Sprite):
         if isinstance(other, Shift_Arrow):
             return self.direction == other.direction and self.number == other.number
         return False
+    
+    def to_save_dict(self):
+        return {
+            "direction": self.direction,
+            "number": self.number,
+            "consecutive_clicks": self.consecutive_clicks
+        }
+    
+    def from_save_dict(self, data:dict):
+        self.direction = data.get("direction", self.direction)
+        self.number = data.get("number", self.number)
+        self.consecutive_clicks = data.get("consecutive_clicks", self.consecutive_clicks)
     
 class Grid:
     size = 5
@@ -430,6 +505,28 @@ class Grid:
         else:
             Room.show_info = True
             return
+    
+    def to_save_dict(self):
+        return {
+            "rooms": {f"{pos[0]},{pos[1]}": room.to_save_dict() for pos, room in self.rooms.items()},
+            "arrows": [arrow.to_save_dict() for arrow in self.arrows],
+            "show_info": Room.show_info,
+            "show_player": Info.show_player,
+        }
+    
+    def from_save_dict(self, data:dict):
+        rooms_data = data.get("rooms", {})
+        for pos_str, room_dict in rooms_data.items():
+            x_str, y_str = pos_str.split(",")
+            pos = (int(x_str), int(y_str))
+            if pos in self.rooms:
+                self.rooms[pos].from_save_dict(room_dict)
+        arrows_data = data.get("arrows", [])
+        for i, arrow_dict in enumerate(arrows_data):
+            if i < len(self.arrows):
+                self.arrows[i].from_save_dict(arrow_dict)
+        Room.show_info = data.get("show_info", Room.show_info)
+        Info.show_player = data.get("show_player", Info.show_player)
 
 class Room_Notes():
     starting_center = (50, 400)
@@ -573,6 +670,22 @@ class Player_Notes():
         if not self.confirmed_players:
             self.confirm_note.draw(surface=surface)
             surface.blit(self.confirm_image, (self.confirm_note.rect.centerx - self.confirm_image.get_width()/2, self.confirm_note.rect.centery - self.confirm_image.get_height()/2))
+
+    def to_save_dict(self):
+        return {
+            "players": [player.to_save_dict() for player in self.players],
+            "confirmed_players": self.confirmed_players
+        }
+    
+    def from_save_dict(self, data:dict):
+        players_data = data.get("players", [])
+        self.players = []
+        for player_dict in players_data:
+            player = Player(color=PLAYERCOLOR["grey"], number=0, sprite_size=self.sprite_size, selected_sprite_size=self.selected_sprite_size)
+            player.from_save_dict(player_dict)
+            self.players.append(player)
+        self.confirmed_players = data.get("confirmed_players", self.confirmed_players)
+        self.update_rect_pos()
 
 def draw_caption(pos, text, surface):
     rendered_text = pygame.font.SysFont(FONT, CAPTION_SIZE).render(f"{text}", True, (0,0,0))
