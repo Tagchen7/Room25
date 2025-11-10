@@ -1,6 +1,28 @@
 # Contains the main game logic, including game initialization, game loop, collision detection, etc.
 from Game.GameLogic import entity
 import pickle
+import sys
+import os
+
+def _resolve_savefiles_base():
+    candidates = []
+
+    # 1) If frozen (PyInstaller/py2exe), check common runtime locations
+    if getattr(sys, 'frozen', False):
+        meipass = getattr(sys, '_MEIPASS', None)
+        if meipass:
+            candidates.append(meipass)
+
+    # Last resort: assume repository layout relative to this file
+    try:
+        fallback = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'SaveFiles')
+        return os.path.normpath(fallback)
+    except Exception:
+        # extremely fallback to current directory Assets
+        return os.path.normpath(os.path.join(os.getcwd(), 'SaveFiles'))
+    
+
+SAVEFILES_BASE = _resolve_savefiles_base()
 
 class GameState:
     def __init__(self):
@@ -194,9 +216,9 @@ class GameState:
             self.setting_notes.restart = False
             
         if note == self.setting_notes.save_note:
-            self.save_game("savefile.txt")
+            self.save_game("savefile")
         elif note == self.setting_notes.load_note:
-            self.load_game("savefile.txt")
+            self.load_game("savefile")
         elif note == self.setting_notes.restart_note:
             self.restart_game()
     
@@ -251,30 +273,42 @@ class GameState:
         else:
             print("tried to name without a player")
             
-    def save_game(self, filename):
+    def save_game(self, filename="savefile"):
         if not self.setting_notes.save:
             self.setting_notes.save = True
             return
         self.setting_notes.save = False
         
         print("Saving game...")
-        #with open(filename, "w") as f:
-        #    f.write("Test_Save_Data")
-        
-        with open('savegame.pkl', 'wb') as f:
+        # Be robust in case SAVEFILES_BASE already contains the filename
+        # (avoid SaveFiles/<name>/<name>.pkl). Determine the directory to
+        # place the file and ensure it exists.
+        if os.path.basename(SAVEFILES_BASE) == filename:
+            # SAVEFILES_BASE already ends with the filename; place the .pkl
+            # next to that directory (one level up).
+            dir_path = os.path.dirname(SAVEFILES_BASE)
+        else:
+            dir_path = SAVEFILES_BASE
+        os.makedirs(dir_path, exist_ok=True)
+        file_path = os.path.join(dir_path, f"{filename}.pkl")
+        with open(file_path, 'wb') as f:
             pickle.dump(self.to_save_dict(), f)
     
-    def load_game(self, filename):
+    def load_game(self, filename="savefile"):
         if not self.setting_notes.load:
             self.setting_notes.load = True
             return
         self.setting_notes.load = False
         
         print("Loading game...")
-        #with open(filename) as f:
-        #    f.read()
-            
-        with open('savegame.pkl', 'rb') as f:
+        # Mirror save behaviour: if SAVEFILES_BASE unexpectedly ends with
+        # the filename, look one level up for <filename>.pkl
+        if os.path.basename(SAVEFILES_BASE) == filename:
+            dir_path = os.path.dirname(SAVEFILES_BASE)
+        else:
+            dir_path = SAVEFILES_BASE
+        file_path = os.path.join(dir_path, f"{filename}.pkl")
+        with open(file_path, 'rb') as f:
             self.from_save_dict(pickle.load(f))
     
     def restart_game(self):

@@ -1,6 +1,4 @@
 # Contains definitions for game entities like Player, Enemy, Projectile, etc.
-from sre_parse import WHITESPACE
-from turtle import circle
 import pygame
 import sys
 import os
