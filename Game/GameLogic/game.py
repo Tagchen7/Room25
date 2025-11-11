@@ -4,6 +4,11 @@ import pickle
 import sys
 import os
 
+import tkinter as tk
+from tkinter import filedialog
+
+from Game.GameLogic.utils import edit_filename
+
 def _resolve_savefiles_base():
     candidates = []
 
@@ -216,9 +221,9 @@ class GameState:
             self.setting_notes.restart = False
             
         if note == self.setting_notes.save_note:
-            self.save_game("savefile")
+            self.save_game()
         elif note == self.setting_notes.load_note:
-            self.load_game("savefile")
+            self.load_game()
         elif note == self.setting_notes.restart_note:
             self.restart_game()
     
@@ -280,34 +285,18 @@ class GameState:
         self.setting_notes.save = False
         
         print("Saving game...")
-        # Be robust in case SAVEFILES_BASE already contains the filename
-        # (avoid SaveFiles/<name>/<name>.pkl). Determine the directory to
-        # place the file and ensure it exists.
-        if os.path.basename(SAVEFILES_BASE) == filename:
-            # SAVEFILES_BASE already ends with the filename; place the .pkl
-            # next to that directory (one level up).
-            dir_path = os.path.dirname(SAVEFILES_BASE)
-        else:
-            dir_path = SAVEFILES_BASE
-        os.makedirs(dir_path, exist_ok=True)
-        file_path = os.path.join(dir_path, f"{filename}.pkl")
+        file_path = filedialog.asksaveasfilename(initialdir=SAVEFILES_BASE, title="Save Game As", initialfile=edit_filename(filename), defaultextension=".pkl", filetypes=[("Pickle files", "*.pkl")])
         with open(file_path, 'wb') as f:
             pickle.dump(self.to_save_dict(), f)
     
-    def load_game(self, filename="savefile"):
+    def load_game(self):
         if not self.setting_notes.load:
             self.setting_notes.load = True
             return
         self.setting_notes.load = False
         
         print("Loading game...")
-        # Mirror save behaviour: if SAVEFILES_BASE unexpectedly ends with
-        # the filename, look one level up for <filename>.pkl
-        if os.path.basename(SAVEFILES_BASE) == filename:
-            dir_path = os.path.dirname(SAVEFILES_BASE)
-        else:
-            dir_path = SAVEFILES_BASE
-        file_path = os.path.join(dir_path, f"{filename}.pkl")
+        file_path = filedialog.askopenfilename(initialdir=SAVEFILES_BASE, title="Select Save File", defaultextension=".pkl", filetypes=[("Pickle files", "*.pkl")])
         with open(file_path, 'rb') as f:
             self.from_save_dict(pickle.load(f))
     
