@@ -20,11 +20,11 @@ def _resolve_savefiles_base():
 
     # Last resort: assume repository layout relative to this file
     try:
-        fallback = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'SaveFiles')
+        fallback = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'Game', 'SaveFiles')
         return os.path.normpath(fallback)
     except Exception:
         # extremely fallback to current directory Assets
-        return os.path.normpath(os.path.join(os.getcwd(), 'SaveFiles'))
+        return os.path.normpath(os.path.join(os.getcwd(), 'Game', 'SaveFiles'))
     
 
 SAVEFILES_BASE = _resolve_savefiles_base()
@@ -286,6 +286,8 @@ class GameState:
         
         print("Saving game...")
         file_path = filedialog.asksaveasfilename(initialdir=SAVEFILES_BASE, title="Save Game As", initialfile=edit_filename(filename), defaultextension=".pkl", filetypes=[("Pickle files", "*.pkl")])
+        if not file_path:
+            return
         with open(file_path, 'wb') as f:
             pickle.dump(self.to_save_dict(), f)
     
@@ -297,6 +299,8 @@ class GameState:
         
         print("Loading game...")
         file_path = filedialog.askopenfilename(initialdir=SAVEFILES_BASE, title="Select Save File", defaultextension=".pkl", filetypes=[("Pickle files", "*.pkl")])
+        if not file_path:
+            return
         with open(file_path, 'rb') as f:
             self.from_save_dict(pickle.load(f))
     
