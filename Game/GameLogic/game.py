@@ -10,57 +10,48 @@ from tkinter import filedialog
 from Game.GameLogic.utils import edit_filename
 
 def _resolve_savefiles_base():
-    candidates = []
-
-    # 1) If frozen (PyInstaller/py2exe), check common runtime locations
+    #Return the default SaveFiles base directory.
+    # If frozen (onefile or onedir), prefer a SaveFiles folder next to the
+    # executable (this makes onedir builds behave like development).
     if getattr(sys, 'frozen', False):
+        try:
+            exe_dir = os.path.dirname(sys.executable)
+            candidate = os.path.normpath(os.path.join(exe_dir, 'SaveFiles'))
+            try:
+                os.makedirs(candidate, exist_ok=True)
+                return candidate
+            except Exception:
+                # creating next-to-exe folder failed (e.g., protected dir);
+                # fall back to checking _MEIPASS below
+                pass
+        except Exception:
+            pass
+
+        # If next-to-exe didn't work, check the PyInstaller extraction
+        # folder (onefile) for a bundled SaveFiles folder.
         meipass = getattr(sys, '_MEIPASS', None)
         if meipass:
-            candidates.append(meipass)
+            candidate = os.path.normpath(os.path.join(meipass, 'SaveFiles'))
+            if os.path.isdir(candidate):
+                return candidate
 
-    # Last resort: assume repository layout relative to this file
-        """Return the default SaveFiles base directory.
-
-        Behavior:
-        - When frozen, prefer a SaveFiles folder that is included with the
-          distribution (first check sys._MEIPASS, then a SaveFiles folder next
-          to the executable). If possible return/create that folder so the
-          Save dialog starts there by default.
-        - When running from source, return the repository-local 'SaveFiles'
-          directory (so dev experience is unchanged).
-        """
-
-        # If frozen (onefile or onedir), prefer bundled SaveFiles locations
-        if getattr(sys, 'frozen', False):
-            # First, check the PyInstaller runtime extraction folder (onefile)
-            meipass = getattr(sys, '_MEIPASS', None)
-            if meipass:
-                candidate = os.path.normpath(os.path.join(meipass, 'SaveFiles'))
-                if os.path.isdir(candidate):
-                    return candidate
-
-            # Next, check for a SaveFiles folder next to the executable (onedir)
-            try:
-                exe_dir = os.path.dirname(sys.executable)
-                candidate = os.path.normpath(os.path.join(exe_dir, 'SaveFiles'))
-                # Try to create it if it doesn't exist (ok when dist is in a
-                # writable location). If creation fails, we'll fall back below.
-                try:
-                    os.makedirs(candidate, exist_ok=True)
-                    return candidate
-                except Exception:
-                    # ignore and fall back
-                    pass
-            except Exception:
-                pass
-
-        # Default for development: repo-relative SaveFiles folder
+    # Default for development: repo-relative SaveFiles folder
+    try:
+        repo_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        fallback = os.path.join(repo_root, 'SaveFiles')
+        # Ensure directory exists so dialog can open there by default
         try:
-            repo_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-            fallback = os.path.join(repo_root, 'SaveFiles')
-            return os.path.normpath(fallback)
+            os.makedirs(fallback, exist_ok=True)
         except Exception:
-            return os.path.normpath(os.path.join(os.getcwd(), 'SaveFiles'))
+            pass
+        return os.path.normpath(fallback)
+    except Exception:
+        fallback = os.path.normpath(os.path.join(os.getcwd(), 'SaveFiles'))
+        try:
+            os.makedirs(fallback, exist_ok=True)
+        except Exception:
+            pass
+        return fallback
     
 
 SAVEFILES_BASE = _resolve_savefiles_base()
