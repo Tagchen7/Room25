@@ -1,0 +1,3 @@
+pyinstaller==6.16.0
+# Optional build helpers (install if you want UPX compression, etc.)
+# upx
