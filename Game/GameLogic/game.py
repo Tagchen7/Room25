@@ -19,12 +19,48 @@ def _resolve_savefiles_base():
             candidates.append(meipass)
 
     # Last resort: assume repository layout relative to this file
-    try:
-        fallback = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'Game', 'SaveFiles')
-        return os.path.normpath(fallback)
-    except Exception:
-        # extremely fallback to current directory Assets
-        return os.path.normpath(os.path.join(os.getcwd(), 'Game', 'SaveFiles'))
+        """Return the default SaveFiles base directory.
+
+        Behavior:
+        - When frozen, prefer a SaveFiles folder that is included with the
+          distribution (first check sys._MEIPASS, then a SaveFiles folder next
+          to the executable). If possible return/create that folder so the
+          Save dialog starts there by default.
+        - When running from source, return the repository-local 'SaveFiles'
+          directory (so dev experience is unchanged).
+        """
+
+        # If frozen (onefile or onedir), prefer bundled SaveFiles locations
+        if getattr(sys, 'frozen', False):
+            # First, check the PyInstaller runtime extraction folder (onefile)
+            meipass = getattr(sys, '_MEIPASS', None)
+            if meipass:
+                candidate = os.path.normpath(os.path.join(meipass, 'SaveFiles'))
+                if os.path.isdir(candidate):
+                    return candidate
+
+            # Next, check for a SaveFiles folder next to the executable (onedir)
+            try:
+                exe_dir = os.path.dirname(sys.executable)
+                candidate = os.path.normpath(os.path.join(exe_dir, 'SaveFiles'))
+                # Try to create it if it doesn't exist (ok when dist is in a
+                # writable location). If creation fails, we'll fall back below.
+                try:
+                    os.makedirs(candidate, exist_ok=True)
+                    return candidate
+                except Exception:
+                    # ignore and fall back
+                    pass
+            except Exception:
+                pass
+
+        # Default for development: repo-relative SaveFiles folder
+        try:
+            repo_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            fallback = os.path.join(repo_root, 'SaveFiles')
+            return os.path.normpath(fallback)
+        except Exception:
+            return os.path.normpath(os.path.join(os.getcwd(), 'SaveFiles'))
     
 
 SAVEFILES_BASE = _resolve_savefiles_base()
